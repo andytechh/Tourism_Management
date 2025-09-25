@@ -3,11 +3,12 @@ import AppLayout from '@/layouts/app-layout';
 import { dashboard } from '@/routes';
 import { type BreadcrumbItem } from '@/types';
 import { Head } from '@inertiajs/react';
+import { route } from 'ziggy-js';
 
 const breadcrumbs: BreadcrumbItem[] = [
     {
         title: 'Staff-Dashboard',
-        href: dashboard().url,
+        href: route('staff.dashboard'),
     },
 ];
 

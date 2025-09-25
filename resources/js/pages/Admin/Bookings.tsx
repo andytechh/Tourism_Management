@@ -1,17 +1,16 @@
 import { PlaceholderPattern } from '@/components/ui/placeholder-pattern';
 import AppLayout from '@/layouts/app-layout';
-import { dashboard } from '@/routes';
 import { type BreadcrumbItem } from '@/types';
 import { Head } from '@inertiajs/react';
-
+import { route } from 'ziggy-js';
 const breadcrumbs: BreadcrumbItem[] = [
     {
-        title: 'Main-Dashboard',
-        href: '/',
+        title: 'Booking Management',
+        href: route('admin.bookings'), 
     },
 ];
 
-export default function Dashboard() {
+export default function Bookings() {
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
             <Head title="Dashboard" />

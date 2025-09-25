@@ -28,25 +28,35 @@ class AuthenticatedSessionController extends Controller
     /**
      * Handle an incoming authentication request.
      */
-    public function store(LoginRequest $request): RedirectResponse
-    {
-        $user = $request->validateCredentials();
+   public function store(LoginRequest $request): RedirectResponse
+{
+    $user = $request->validateCredentials();
 
-        if (Features::enabled(Features::twoFactorAuthentication()) && $user->hasEnabledTwoFactorAuthentication()) {
-            $request->session()->put([
-                'login.id' => $user->getKey(),
-                'login.remember' => $request->boolean('remember'),
-            ]);
+    if (Features::enabled(Features::twoFactorAuthentication()) && $user->hasEnabledTwoFactorAuthentication()) {
+        $request->session()->put([
+            'login.id' => $user->getKey(),
+            'login.remember' => $request->boolean('remember'),
+        ]);
 
-            return to_route('two-factor.login');
-        }
-
-        Auth::login($user, $request->boolean('remember'));
-
-        $request->session()->regenerate();
-
-        return redirect()->intended(route('dashboard', absolute: false));
+        return to_route('two-factor.login');
     }
+
+    Auth::login($user, $request->boolean('remember'));
+    $request->session()->regenerate();
+
+    //  Role-based redirect logic
+    switch ($user->role) {
+        case 'admin':
+            return redirect()->intended(route('admin.dashboard'));
+        case 'staff':
+            return redirect()->intended(route('staff.dashboard'));
+        case 'tourist':
+            return redirect()->intended(route('tourist.home'));
+        default:
+            return redirect()->intended(route('dashboard'));
+    }
+}
+
 
     /**
      * Destroy an authenticated session.
