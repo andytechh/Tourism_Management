@@ -1,9 +1,9 @@
 import { PlaceholderPattern } from '@/components/ui/placeholder-pattern';
 import AppLayout from '@/layouts/app-layout';
 import { type BreadcrumbItem } from '@/types';
-import { Head } from '@inertiajs/react';
+import { Head, useForm, usePage} from '@inertiajs/react';
 import { route } from 'ziggy-js';
-import React, { useState } from "react";
+import React, { FormEvent, useState } from "react";
 import {
   Plus,
   Search,
@@ -15,8 +15,15 @@ import {
   MapPin,
   Star,
   Users,
-  Calendar
+  Calendar,
+  CheckCircle2Icon,
+  Megaphone
 } from "lucide-react";
+import {
+  Alert,
+  AlertDescription,
+  AlertTitle,
+} from "@/components/ui/alert"
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -34,64 +41,121 @@ const breadcrumbs: BreadcrumbItem[] = [
         href: route('admin.destinations'), 
     },
 ];
+    interface Destinations{
+    id: number;
+    name: string;
+    category: string;
+    location: string;
+    price: number;
+    rating: number;
+    bookings: number;
+    status: string;
+    image: string;        
+    created_at: string;
 
+  }
+
+  interface Stats {
+  total_destinations: number;
+  active_tours: number;
+  total_bookings: number;
+  avg_rating: number;
+}
+
+  interface PageProps{
+    flash: {
+      message?: string
+    },
+    destinations: 
+      Destinations[];
+    
+   stats?: Stats;
+
+  }
 export default function ManageDestinations() {
   const [searchTerm, setSearchTerm] = useState("");
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
 
-  const destinations = [
-    {
-      id: 1,
-      name: "Whale Shark Interaction",
-      category: "Marine Adventure",
-      location: "Donsol Bay",
-      price: "₱1,500",
-      rating: 4.9,
-      bookings: 247,
-      status: "Active",
-      image: "https://images.unsplash.com/photo-1559827260-dc66d52bef19?w=100&h=100&fit=crop",
-      createdAt: "2024-01-15"
-    },
-    {
-      id: 2,
-      name: "Firefly Watching",
-      category: "Nature Experience",
-      location: "Donsol River",
-      price: "₱800",
-      rating: 4.7,
-      bookings: 156,
-      status: "Active",
-      image: "https://images.unsplash.com/photo-1518837695005-2083093ee35b?w=100&h=100&fit=crop",
-      createdAt: "2024-01-20"
-    },
-    {
-      id: 3,
-      name: "Island Hopping",
-      category: "Adventure",
-      location: "Sorsogon Islands",
-      price: "₱2,200",
-      rating: 4.8,
-      bookings: 89,
-      status: "Draft",
-      image: "https://images.unsplash.com/photo-1559827260-dc66d52bef19?w=100&h=100&fit=crop",
-      createdAt: "2024-02-01"
-    }
-  ];
+  const { data, setData, post, processing, errors } = useForm({
+    name: '',
+    category: '',
+    location: '',
+    price: '',
+    rating: '',
+    bookings: '',
+    description: '',
+    status: '',
+    image: null as File | null,
+  });
+
+  const formatDate = (dateString: string): string => {
+      const options: Intl.DateTimeFormatOptions = { 
+        year: 'numeric', 
+        month: 'short', 
+        day: 'numeric' 
+      };
+      return new Date(dateString).toLocaleDateString('en-US', options);
+    };
+
+  const formatNumber = (num: number): string => {
+      if (num >= 1000) {
+        return (num / 1000).toFixed(1).replace(/\.0$/, '') + 'k';
+      }
+      return num.toString();
+    };
+
+    const formatRating = (rating: number): string => {
+      return rating.toFixed(1);
+    };
+
+
+ const { destinations = [], flash, stats = {
+    total_destinations: 0,
+    active_tours: 0,
+    total_bookings: 0,
+    avg_rating: 0
+  } } = usePage().props as PageProps;
 
   const filteredDestinations = destinations.filter(dest =>
     dest.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
     dest.location.toLowerCase().includes(searchTerm.toLowerCase())
   );
+
+  const handleSumbit = (e: React.FormEvent) => {
+    e.preventDefault();
+    post(route('admin.destinations.store'), {
+      preserveScroll: true,
+      onSuccess: () => {
+        setIsAddDialogOpen(false);
+      },
+      onError: (errors) => {
+        console.error('Submission failed:', errors);
+      }
+    });
+  };
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
-           <div className="p-6 space-y-6">
+    <div className="p-6 space-y-6">
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
+          <div>
+            {flash.message &&(
+              <Alert>
+              <Megaphone />
+              <AlertTitle>Success!</AlertTitle>
+              <AlertDescription>
+                {flash.message}
+              </AlertDescription>
+            </Alert>
+            )}
+          </div>
           <h1 className="text-3xl font-bold">Manage Destinations</h1>
           <p className="text-muted-foreground">Create and manage tour packages and attractions</p>
         </div>
-        <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
+      
+          <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
+             
           <DialogTrigger asChild>
             <Button className="btn-ocean">
               <Plus className="w-4 h-4 mr-2" />
@@ -99,6 +163,18 @@ export default function ManageDestinations() {
             </Button>
           </DialogTrigger>
           <DialogContent className="max-w-2xl">
+             <form onSubmit={handleSumbit}>
+              {/* Errors Checks */}
+              {Object.keys(errors).length > 0 && (<Alert>
+                <CheckCircle2Icon />
+                <AlertTitle>Errors! Check Inputs</AlertTitle>
+                <AlertDescription>
+                  <ul>
+                    {Object.entries(errors).map(([key, message]) => (<li key={key}>{message as string}</li>) )}
+                  </ul>
+                </AlertDescription>
+              </Alert>
+                )}
             <DialogHeader>
               <DialogTitle>Add New Destination</DialogTitle>
               <DialogDescription>Create a new tour package or attraction</DialogDescription>
@@ -106,43 +182,57 @@ export default function ManageDestinations() {
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
                 <Label htmlFor="name">Destination Name</Label>
-                <Input id="name" placeholder="Enter destination name" />
+                <Input id="name" placeholder="Enter destination name" value={data.name} onChange={(e) => setData('name', e.target.value)} required/>
               </div>
               <div className="space-y-2">
-                <Label htmlFor="category">Category</Label>
-                <Select>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select category" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="marine">Marine Adventure</SelectItem>
-                    <SelectItem value="nature">Nature Experience</SelectItem>
-                    <SelectItem value="cultural">Cultural Tour</SelectItem>
-                    <SelectItem value="adventure">Adventure</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
+                  <Label htmlFor="category">Category</Label>
+                  <Select 
+                    value={data.category} 
+                    onValueChange={(value) => setData('category', value)} required
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select category" />
+                    </SelectTrigger>      
+                    <SelectContent className="text-black">
+                      <SelectItem value="marine">Marine Adventure</SelectItem>
+                      <SelectItem value="nature">Nature Experience</SelectItem>
+                      <SelectItem value="cultural">Cultural Tour</SelectItem>
+                      <SelectItem value="adventure">Adventure</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
               <div className="space-y-2">
                 <Label htmlFor="location">Location</Label>
-                <Input id="location" placeholder="Enter location" />
+                <Input id="location" placeholder="Enter location" value={data.location} onChange={(e) => setData('location', e.target.value)} required/>
               </div>
               <div className="space-y-2">
                 <Label htmlFor="price">Price</Label>
-                <Input id="price" placeholder="₱0.00" />
+                <Input id="price" placeholder="₱0.00" value={data.price} onChange={(e) => setData('price', e.target.value)} required/>
               </div>
               <div className="col-span-2 space-y-2">
                 <Label htmlFor="description">Description</Label>
-                <Textarea id="description" placeholder="Enter destination description" />
+                <Textarea id="description" placeholder="Enter destination description" value={data.description} onChange={(e) => setData('description', e.target.value)}/>
               </div>
+           <div className="col-span-2 space-y-2">
+          <Label htmlFor="description">Destination image</Label>
+              <Input
+                type="file"
+                accept="image/*"
+                id="destination-img"
+                onChange={(e) => setData("image", e.target.files?.[0] ?? null)}
+              />
             </div>
-            <div className="flex justify-end gap-2">
+            </div>
+            <div className="flex justify-end gap-2 mt-2">
               <Button variant="outline" onClick={() => setIsAddDialogOpen(false)}>
                 Cancel
               </Button>
-              <Button className="btn-ocean">Create Destination</Button>
+              <Button className="btn-ocean" disabled={processing} type='submit'>Create Destination</Button>
             </div>
+            </form>
           </DialogContent>
         </Dialog>
+      
       </div>
 
       {/* Stats Cards */}
@@ -154,7 +244,7 @@ export default function ManageDestinations() {
               <MapPin className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">24</div>
+              <div className="text-2xl font-bold">{stats.total_destinations}</div>
               <p className="text-xs text-muted-foreground">+2 from last month</p>
             </CardContent>
           </Card>
@@ -167,8 +257,12 @@ export default function ManageDestinations() {
               <Star className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">18</div>
-              <p className="text-xs text-muted-foreground">75% of total</p>
+              <div className="text-2xl font-bold">{stats.active_tours}</div>
+               <p className="text-xs text-muted-foreground">
+                {stats.total_destinations > 0 
+                  ? Math.round((stats.active_tours / stats.total_destinations) * 100) + '% of total'
+                  : '0% of total'}
+              </p>
             </CardContent>
           </Card>
         </motion.div>
@@ -180,8 +274,12 @@ export default function ManageDestinations() {
               <Users className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">1,247</div>
-              <p className="text-xs text-muted-foreground">+12% from last month</p>
+              <div className="text-2xl font-bold">{formatNumber(stats.total_bookings)}</div>
+              <p className="text-xs text-muted-foreground">
+                {stats.total_bookings > 0 
+                  ? Math.round((stats.total_bookings / stats.active_tours) * 100) + '% from last month'
+                  : '0% from last month'}
+              </p>
             </CardContent>
           </Card>
         </motion.div>
@@ -193,7 +291,7 @@ export default function ManageDestinations() {
               <Star className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">4.8</div>
+              <div className="text-2xl font-bold">{formatRating(stats.avg_rating)}</div>
               <p className="text-xs text-muted-foreground">+0.2 from last month</p>
             </CardContent>
           </Card>
@@ -242,13 +340,13 @@ export default function ManageDestinations() {
                   <TableCell>
                     <div className="flex items-center gap-3">
                       <img
-                        src={destination.image}
+                        src={`/storage/${destination.image}`}
                         alt={destination.name}
                         className="w-10 h-10 rounded-lg object-cover"
                       />
                       <div>
                         <div className="font-medium">{destination.name}</div>
-                        <div className="text-sm text-muted-foreground">Created {destination.createdAt}</div>
+                        <div className="text-sm text-muted-foreground">Created  {formatDate(destination.created_at)}</div>
                       </div>
                     </div>
                   </TableCell>
@@ -281,7 +379,7 @@ export default function ManageDestinations() {
                           <MoreHorizontal className="h-4 w-4" />
                         </Button>
                       </DropdownMenuTrigger>
-                      <DropdownMenuContent align="end">
+                      <DropdownMenuContent align="end" className='text-black'>
                         <DropdownMenuItem>
                           <Eye className="mr-2 h-4 w-4" />
                           View Details
@@ -290,7 +388,7 @@ export default function ManageDestinations() {
                           <Edit className="mr-2 h-4 w-4" />
                           Edit
                         </DropdownMenuItem>
-                        <DropdownMenuItem className="text-destructive">
+                        <DropdownMenuItem className="text-destructive hover:bg-red-400 hover:text-black">
                           <Trash2 className="mr-2 h-4 w-4" />
                           Delete
                         </DropdownMenuItem>

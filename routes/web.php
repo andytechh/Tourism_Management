@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\DestinationsController;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 
@@ -36,6 +37,11 @@ Route::middleware(['auth', 'verified'])->group(function () {
       Route::get('/admin/reports', function () {
         return Inertia::render('Admin/Reports');
     })->name('admin.reports');
+// Admin
+    Route::get('/admin/destinations', [DestinationsController::class, 'index'])
+        ->name('admin.destinations');
+       Route::post('/admin/destinations', [DestinationsController::class, 'store'])
+    ->name('admin.destinations.store');
 
 //Staff
     Route::get('/staff/dashboard', function () {
