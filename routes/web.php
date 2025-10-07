@@ -40,17 +40,26 @@ Route::middleware(['auth', 'verified'])->group(function () {
 // Admin
     Route::get('/admin/destinations', [DestinationsController::class, 'index'])
         ->name('admin.destinations');
-       Route::post('/admin/destinations', [DestinationsController::class, 'store'])
-    ->name('admin.destinations.store');
+    Route::post('/admin/destinations', [DestinationsController::class, 'store'])
+        ->name('admin.destinations.store');
+    Route::get('/admin/destinations/{destination}/edit', [DestinationsController::class, 'edit'])
+        ->name('admin.destinations.edit');
+    Route::put('/admin/destinations/{destination}', [DestinationsController::class, 'update'])
+        ->name('admin.destinations.update');
+    Route::delete('/admin/destinations/{destination}', [DestinationsController::class, 'destroy'])
+        ->name('admin.destinations.destroy');
 
 //Staff
     Route::get('/staff/dashboard', function () {
         return Inertia::render('Staff/Dashboard');
     })->name('staff.dashboard');
-
+    
+//Tourist
     Route::get('/tourist/home', function () {
         return Inertia::render('Tourist/Home');
     })->name('tourist.home');
+
+
 });
 
 require __DIR__.'/settings.php';

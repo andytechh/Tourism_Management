@@ -14,7 +14,7 @@ class DestinationsController extends Controller
         
          $active_tours = $destinations->filter(function ($dest) {
         return in_array(strtolower($dest->status), ['active', '1', 'true']);
-    })->count();
+         })->count();
          $stats = [
         'total_destinations' => $destinations->count(),
         'active_tours' => $active_tours,
@@ -55,6 +55,45 @@ class DestinationsController extends Controller
         ]);
 
         return redirect()->route('admin.destinations')
-            ->with('message', 'Destination created successfully!');
+            ->with('message', 'Destination created Successfully!');
+    }
+    public function edit(Destinations $destination){
+        return Inertia::render('Admin/ManageDestinations', compact('destination'));
+    }
+    public function destroy(Destinations $destination){
+        $destination->delete();
+        return redirect()->route('admin.destinations')->with('message', 'Destination Deleted Successfully!');
+    }
+    public function update(Request $request, Destinations $destination){
+        $request->validate([
+            'name' => 'required|string|max:255',
+            'category' => 'required|string',
+            'location' => 'required|string|max:255',
+            'price' => 'required|numeric',
+            'rating' => 'nullable|numeric',
+            'bookings' => 'nullable|integer', 
+            'status' => 'nullable|string',
+            'description' => 'required|string',
+            'image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
+        ]);
+
+        if ($request->hasFile('image')) {
+            $imagePath = $request->file('image')->store('destinations', 'public');
+            $destination->image = $imagePath;
+        }
+
+        $destination->update([
+            'name' => $request->name,
+            'category' => $request->category,
+            'location' => $request->location,
+            'price' => $request->price,
+            'rating' => $request->rating,
+            'bookings' => $request->bookings ?? $destination->bookings,
+            'status' => $request->status ?? $destination->status,
+            'description' => $request->description,
+        ]);
+
+        return redirect()->route('admin.destinations')
+            ->with('message', 'Destination updated Successfully!');
     }
 }
