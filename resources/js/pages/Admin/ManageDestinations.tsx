@@ -1,7 +1,7 @@
   import { PlaceholderPattern } from '@/components/ui/placeholder-pattern';
   import AppLayout from '@/layouts/app-layout';
   import { type BreadcrumbItem } from '@/types';
-  import { Head, useForm, usePage} from '@inertiajs/react';
+  import { Head, useForm, usePage, router} from '@inertiajs/react';
   import { route } from 'ziggy-js';
   import React, { FormEvent, useState, useEffect } from "react";
   import {
@@ -186,11 +186,9 @@ const handleUpdate = (e: React.FormEvent) => {
     formData.append('image', data.image);
   }
 
-  // Inertia: send FormData and spoof method PUT
-  post(route('admin.destinations.update', selectedDestination.id), {
-    data: formData,
-    forceFormData: true,
-    headers: { 'X-HTTP-Method-Override': 'PUT' },
+  // Inertia: send FormData and spoof method PUT via _method
+  formData.append('_method', 'PUT');
+  router.post(route('admin.destinations.update', selectedDestination.id), formData, {
     preserveScroll: true,
     onSuccess: () => {
       setIsAddDialogOpen(false);
