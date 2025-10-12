@@ -169,21 +169,21 @@
 
 const handleUpdate = (e: React.FormEvent) => {
   e.preventDefault();
-  put(route('admin.destinations.update', selectedDestination?.id ), {
-        preserveScroll: true,
-        onSuccess: () => {
-          setIsAddDialogOpen(false);
-          resetInertiaForm();
-        },
-        onError: (errors) => {
-          console.error('Submission failed:', errors);
-        }
-      });
-
   if (!selectedDestination) return;
-  
-  setIsEditDialogOpen(false);
-  resetInertiaForm();
+
+  put(route('admin.destinations.update', selectedDestination.id), {
+    preserveScroll: true,
+    // Ensure file uploads are sent as FormData
+    forceFormData: true,
+    onSuccess: () => {
+      setIsEditDialogOpen(false);
+      setSelectedDestination(null);
+      resetInertiaForm();
+    },
+    onError: (errors) => {
+      console.error('Submission failed:', errors);
+    },
+  });
 };
 
     const handleDelete = (id: number, name: string) => {

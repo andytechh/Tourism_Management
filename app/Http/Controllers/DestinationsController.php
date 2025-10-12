@@ -77,12 +77,8 @@ class DestinationsController extends Controller
             'image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
         ]);
 
-        if ($request->hasFile('image')) {
-            $imagePath = $request->file('image')->store('destinations', 'public');
-            $destination->image = $imagePath;
-        }
-
-        $destination->update([
+        // Build update payload and include image only when provided
+        $data = [
             'name' => $request->name,
             'category' => $request->category,
             'location' => $request->location,
@@ -91,7 +87,13 @@ class DestinationsController extends Controller
             'bookings' => $request->bookings ?? $destination->bookings,
             'status' => $request->status ?? $destination->status,
             'description' => $request->description,
-        ]);
+        ];
+
+        if ($request->hasFile('image')) {
+            $data['image'] = $request->file('image')->store('destinations', 'public');
+        }
+
+        $destination->update($data);
 
         return redirect()->route('admin.destinations')
             ->with('message', 'Destination updated Successfully!');
