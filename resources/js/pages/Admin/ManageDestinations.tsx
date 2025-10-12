@@ -79,7 +79,7 @@
     const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
     const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
     const [selectedDestination, setSelectedDestination] = useState<Destinations | null>(null);
-    const { data, put, setData, post, processing, errors, delete: destroy, reset: resetInertiaForm } = useForm({
+  const { data, put, setData, post, transform, processing, errors, delete: destroy, reset: resetInertiaForm } = useForm({
       name: '',
       category: '',
       location:  '',
@@ -169,21 +169,40 @@
 
 const handleUpdate = (e: React.FormEvent) => {
   e.preventDefault();
-  put(route('admin.destinations.update', selectedDestination?.id ), {
-        preserveScroll: true,
-        onSuccess: () => {
-          setIsAddDialogOpen(false);
-          resetInertiaForm();
-        },
-        onError: (errors) => {
-          console.error('Submission failed:', errors);
-        }
-      });
-
   if (!selectedDestination) return;
-  
-  setIsEditDialogOpen(false);
-  resetInertiaForm();
+
+  // Send as POST with method override to support file uploads reliably
+  transform((form) => {
+    const payload: any = { _method: 'put' };
+    // Include non-empty scalar fields only
+    Object.entries(form).forEach(([key, value]) => {
+      if (key === 'image') {
+        if (value) payload.image = value;
+        return;
+      }
+      if (value !== '' && value !== null && typeof value !== 'undefined') {
+        payload[key] = value;
+      }
+    });
+    return payload;
+  });
+
+  post(route('admin.destinations.update', selectedDestination.id), {
+    preserveScroll: true,
+    forceFormData: true,
+    onSuccess: () => {
+      setIsEditDialogOpen(false);
+      setSelectedDestination(null);
+      resetInertiaForm();
+    },
+    onError: (errors) => {
+      console.error('Submission failed:', errors);
+    },
+    onFinish: () => {
+      // Reset transform to default for future submissions
+      transform((form) => form);
+    },
+  });
 };
 
     const handleDelete = (id: number, name: string) => {
