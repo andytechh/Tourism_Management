@@ -79,7 +79,7 @@
     const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
     const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
     const [selectedDestination, setSelectedDestination] = useState<Destinations | null>(null);
-    const { data, put, setData, post, processing, errors, delete: destroy, reset: resetInertiaForm } = useForm({
+  const { data, put, setData, post, transform, processing, errors, delete: destroy, reset: resetInertiaForm } = useForm({
       name: '',
       category: '',
       location:  '',
@@ -171,9 +171,24 @@ const handleUpdate = (e: React.FormEvent) => {
   e.preventDefault();
   if (!selectedDestination) return;
 
-  put(route('admin.destinations.update', selectedDestination.id), {
+  // Send as POST with method override to support file uploads reliably
+  transform((form) => {
+    const payload: any = { _method: 'put' };
+    // Include non-empty scalar fields only
+    Object.entries(form).forEach(([key, value]) => {
+      if (key === 'image') {
+        if (value) payload.image = value;
+        return;
+      }
+      if (value !== '' && value !== null && typeof value !== 'undefined') {
+        payload[key] = value;
+      }
+    });
+    return payload;
+  });
+
+  post(route('admin.destinations.update', selectedDestination.id), {
     preserveScroll: true,
-    // Ensure file uploads are sent as FormData
     forceFormData: true,
     onSuccess: () => {
       setIsEditDialogOpen(false);
@@ -182,6 +197,10 @@ const handleUpdate = (e: React.FormEvent) => {
     },
     onError: (errors) => {
       console.error('Submission failed:', errors);
+    },
+    onFinish: () => {
+      // Reset transform to default for future submissions
+      transform((form) => form);
     },
   });
 };

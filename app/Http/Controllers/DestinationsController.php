@@ -65,29 +65,36 @@ class DestinationsController extends Controller
         return redirect()->route('admin.destinations')->with('message', 'Destination Deleted Successfully!');
     }
     public function update(Request $request, Destinations $destination){
+        // Allow partial updates; validate only provided fields
         $request->validate([
-            'name' => 'required|string|max:255',
-            'category' => 'required|string',
-            'location' => 'required|string|max:255',
-            'price' => 'required|numeric',
-            'rating' => 'nullable|numeric',
-            'bookings' => 'nullable|integer', 
-            'status' => 'nullable|string',
-            'description' => 'required|string',
-            'image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
+            'name' => 'sometimes|string|max:255',
+            'category' => 'sometimes|string',
+            'location' => 'sometimes|string|max:255',
+            'price' => 'sometimes|numeric',
+            'rating' => 'sometimes|nullable|numeric',
+            'bookings' => 'sometimes|nullable|integer', 
+            'status' => 'sometimes|nullable|string',
+            'description' => 'sometimes|string',
+            'image' => 'sometimes|nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
         ]);
 
         // Build update payload and include image only when provided
-        $data = [
-            'name' => $request->name,
-            'category' => $request->category,
-            'location' => $request->location,
-            'price' => $request->price,
-            'rating' => $request->rating,
-            'bookings' => $request->bookings ?? $destination->bookings,
-            'status' => $request->status ?? $destination->status,
-            'description' => $request->description,
-        ];
+        // Only update fields that are present in the request
+        $data = $request->only([
+            'name',
+            'category',
+            'location',
+            'price',
+            'rating',
+            'bookings',
+            'status',
+            'description',
+        ]);
+
+        // Drop empty strings so we don't overwrite with blanks
+        $data = array_filter($data, function ($value) {
+            return !(is_null($value) || $value === '');
+        });
 
         if ($request->hasFile('image')) {
             $data['image'] = $request->file('image')->store('destinations', 'public');
