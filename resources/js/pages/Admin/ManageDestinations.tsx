@@ -1,7 +1,7 @@
   import { PlaceholderPattern } from '@/components/ui/placeholder-pattern';
   import AppLayout from '@/layouts/app-layout';
   import { type BreadcrumbItem } from '@/types';
-  import { Head, useForm, usePage} from '@inertiajs/react';
+  import { Head, useForm, usePage, router} from '@inertiajs/react';
   import { route } from 'ziggy-js';
   import React, { FormEvent, useState, useEffect } from "react";
   import {
@@ -169,21 +169,36 @@
 
 const handleUpdate = (e: React.FormEvent) => {
   e.preventDefault();
-  put(route('admin.destinations.update', selectedDestination?.id ), {
-        preserveScroll: true,
-        onSuccess: () => {
-          setIsAddDialogOpen(false);
-          resetInertiaForm();
-        },
-        onError: (errors) => {
-          console.error('Submission failed:', errors);
-        }
-      });
 
   if (!selectedDestination) return;
-  
-  setIsEditDialogOpen(false);
-  resetInertiaForm();
+
+  // Build FormData to support optional file upload and partial fields
+  const formData = new FormData();
+  if (data.name !== undefined && data.name !== null) formData.append('name', String(data.name));
+  if (data.category !== undefined && data.category !== null) formData.append('category', String(data.category));
+  if (data.location !== undefined && data.location !== null) formData.append('location', String(data.location));
+  if (data.price !== undefined && data.price !== null) formData.append('price', String(data.price));
+  if (data.rating !== undefined && data.rating !== null) formData.append('rating', String(data.rating));
+  if (data.bookings !== undefined && data.bookings !== null) formData.append('bookings', String(data.bookings));
+  if (data.status !== undefined && data.status !== null) formData.append('status', String(data.status));
+  if (data.description !== undefined && data.description !== null) formData.append('description', String(data.description));
+  if (data.image instanceof File) {
+    formData.append('image', data.image);
+  }
+
+  // Inertia: send FormData and spoof method PUT via _method
+  formData.append('_method', 'PUT');
+  router.post(route('admin.destinations.update', selectedDestination.id), formData, {
+    preserveScroll: true,
+    onSuccess: () => {
+      setIsAddDialogOpen(false);
+      setIsEditDialogOpen(false);
+      resetInertiaForm();
+    },
+    onError: (errors) => {
+      console.error('Submission failed:', errors);
+    }
+  });
 };
 
     const handleDelete = (id: number, name: string) => {
