@@ -51,12 +51,11 @@ class AuthenticatedSessionController extends Controller
         case 'staff':
             return redirect()->intended(route('staff.dashboard'));
         case 'tourist':
-            return redirect()->intended(route('tourist.home'));
+            return redirect()->intended(route('tourist.dashboard'));
         default:
             return redirect()->intended(route('dashboard'));
     }
 }
-
 
     /**
      * Destroy an authenticated session.

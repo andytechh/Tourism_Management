@@ -3,6 +3,8 @@
 namespace App\Http\Controllers;
 
 use App\Models\Destinations;
+use Illuminate\Support\Facades\File;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 
@@ -64,36 +66,37 @@ class DestinationsController extends Controller
         $destination->delete();
         return redirect()->route('admin.destinations')->with('message', 'Destination Deleted Successfully!');
     }
-    public function update(Request $request, Destinations $destination){
-        $request->validate([
-            'name' => 'required|string|max:255',
-            'category' => 'required|string',
-            'location' => 'required|string|max:255',
-            'price' => 'required|numeric',
-            'rating' => 'nullable|numeric',
-            'bookings' => 'nullable|integer', 
-            'status' => 'nullable|string',
-            'description' => 'required|string',
-            'image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
-        ]);
+    public function update(Request $request, Destinations $destination)
+{
+    $validated = $request->validate([
+        'name' => 'sometimes|string|max:255',
+        'category' => 'sometimes|string',
+        'location' => 'sometimes|string|max:255',
+        'price' => 'sometimes|numeric',
+        'rating' => 'sometimes|nullable|numeric',
+        'bookings' => 'sometimes|nullable|integer',
+        'status' => 'sometimes|nullable|string',
+        'description' => 'sometimes|string',
+        'image' => 'nullable|file|image|mimes:jpeg,png,jpg,gif|max:2048',
+    ]);
 
-        if ($request->hasFile('image')) {
-            $imagePath = $request->file('image')->store('destinations', 'public');
-            $destination->image = $imagePath;
+    if ($request->hasFile('image')) {
+        if (!empty($destination->image) && Storage::disk('public')->exists($destination->image)) {
+            Storage::disk('public')->delete($destination->image);
         }
 
-        $destination->update([
-            'name' => $request->name,
-            'category' => $request->category,
-            'location' => $request->location,
-            'price' => $request->price,
-            'rating' => $request->rating,
-            'bookings' => $request->bookings ?? $destination->bookings,
-            'status' => $request->status ?? $destination->status,
-            'description' => $request->description,
-        ]);
-
-        return redirect()->route('admin.destinations')
-            ->with('message', 'Destination updated Successfully!');
+        // Store new image
+        $imagePath = $request->file('image')->store('destinations', 'public');
+        $validated['image'] = $imagePath;
+    } else {
+        unset($validated['image']);
     }
+     
+    $destination->update($validated);
+
+    return redirect()
+        ->route('admin.destinations')
+        ->with('message', 'Destination updated successfully!');
 }
+
+} 

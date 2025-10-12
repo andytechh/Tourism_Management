@@ -41,19 +41,19 @@
           href: route('admin.destinations'), 
       },
   ];
-      interface Destinations{
-      id: number;
-      name: string;
-      category: string;
-      location: string;
-      price: number;
-      rating: number;
-      bookings: number;
-      description: string;
-      status: string;
-      image: string;        
-      created_at: string;
-
+    interface Destinations{
+    id: number;
+    name: string;
+    category: string;
+    location: string;
+    price: number;
+    rating: number;
+    bookings: number;
+    description: string;
+    status: string;
+    image: string;        
+    created_at: string;
+    updated_at: string;
     }
     interface Stats {
     total_destinations: number;
@@ -169,23 +169,40 @@
 
 const handleUpdate = (e: React.FormEvent) => {
   e.preventDefault();
-  put(route('admin.destinations.update', selectedDestination?.id ), {
-        preserveScroll: true,
-        onSuccess: () => {
-          setIsAddDialogOpen(false);
-          resetInertiaForm();
-        },
-        onError: (errors) => {
-          console.error('Submission failed:', errors);
-        }
-      });
+if (!selectedDestination) return;
 
   if (!selectedDestination) return;
-  
-  setIsEditDialogOpen(false);
-  resetInertiaForm();
-};
+  // Prepare FormData
+  const formData = new FormData();
+  if (data.name !== undefined && data.name !== null) formData.append('name', String(data.name));
+  if (data.category !== undefined && data.category !== null) formData.append('category', String(data.category));
+  if (data.location !== undefined && data.location !== null) formData.append('location', String(data.location));
+  if (data.price !== undefined && data.price !== null) formData.append('price', String(data.price));
+  if (data.rating !== undefined && data.rating !== null) formData.append('rating', String(data.rating));
+  if (data.bookings !== undefined && data.bookings !== null) formData.append('bookings', String(data.bookings));
+  if (data.status !== undefined && data.status !== null) formData.append('status', String(data.status));
+  if (data.description !== undefined && data.description !== null) formData.append('description', String(data.description));
+   if (data.image instanceof File) {
+    formData.append('image', data.image); 
+  } else if (data.image === null || data.image === '') {
+    formData.append('image', ''); 
+  }
 
+  post(route('admin.destinations.update', selectedDestination.id), {
+    data: formData,
+    forceFormData: true,
+    headers: { 'X-HTTP-Method-Override': 'PUT' },
+    preserveScroll: true,
+    onSuccess: () => {
+      setIsAddDialogOpen(false);
+      setIsEditDialogOpen(false);
+      resetInertiaForm();
+    },
+    onError: (errors) => {
+      console.error('Submission failed:', errors);
+    }
+  });
+};
     const handleDelete = (id: number, name: string) => {
     if(confirm(`Do you want to delete this destination - ${id}, ${name}`)){
         destroy(route("admin.destinations.destroy", id));
@@ -229,7 +246,7 @@ return (
           </Button>
         </DialogTrigger>
         <DialogContent className="max-w-2xl">
-          <form onSubmit={handleSumbit}>
+          <form onSubmit={handleSumbit} encType="multipart/form-data">
             {/* Errors Checks */}
             {Object.keys(errors).length > 0 && (<Alert>
               <CheckCircle2Icon />
@@ -313,8 +330,9 @@ return (
         }}
       >
       <DialogContent className="sm:max-w-[600px]">
-        <form onSubmit={handleUpdate}>
+        <form onSubmit={handleUpdate} encType="multipart/form-data"> 
           
+          {/* Errors Checks */}
            {Object.keys(errors).length > 0 && (<Alert>
               <CheckCircle2Icon />
               <AlertTitle>Errors! Check Inputs</AlertTitle>
@@ -537,7 +555,9 @@ return (
             <SelectItem value="nature">Nature-Experience</SelectItem>
             <SelectItem value="cultural">Cultural-Tour</SelectItem>
             <SelectItem value="adventure">Adventure</SelectItem>
-            
+            </SelectContent>
+          </Select>   
+
       <Select value={statusFilter} onValueChange={setStatusFilter}>
           <SelectTrigger className="w-full">
             <SelectValue placeholder="Status" />
@@ -549,9 +569,6 @@ return (
             <SelectItem value="draft">Draft</SelectItem>
           </SelectContent>
         </Select>
-          </SelectContent>
-        </Select>
-        
       </div>
       </div>
     </div>

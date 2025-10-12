@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\DestinationsController;
+use App\Http\Controllers\Tourist\TouristDashboardController;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 
@@ -55,12 +56,12 @@ Route::middleware(['auth', 'verified'])->group(function () {
     })->name('staff.dashboard');
     
 //Tourist
-    Route::get('/tourist/home', function () {
-        return Inertia::render('Tourist/Home');
-    })->name('tourist.home');
-
+  
+Route::get('/tourist/dashboard', [TouristDashboardController::class, 'index'])
+    ->name('tourist.dashboard');
 
 });
+
 
 require __DIR__.'/settings.php';
 require __DIR__.'/auth.php';
