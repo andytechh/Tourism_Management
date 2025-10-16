@@ -10,7 +10,7 @@ import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { motion } from "framer-motion";
-import { Link } from "react-router-dom";
+import { Link } from '@inertiajs/react';
 import { Calendar, Clock, Filter, Locate, MapPin, Search, Star, Users } from 'lucide-react';
 
 const breadcrumbs: BreadcrumbItem[] = [
@@ -48,6 +48,7 @@ export default function Home() {
   const [selectedCategory, setSelectedCategory] = useState("all");
   const [visibleCount, setVisibleCount] = useState(6);
   const {destinations =[], flash } = usePage().props as PageProps;
+  console.log(destinations);
 
   const categories = [
     { id: "all", name: "All Tours" },
@@ -73,7 +74,6 @@ const filteredDestinations = destinations.filter((dest) => {
     dest.name.toLowerCase().includes(search.toLowerCase()) ||
     dest.location.toLowerCase().includes(search.toLowerCase());
 
- 
   const matchesCategory =
     selectedCategory === "all" || dest.category === selectedCategory;
 
@@ -83,9 +83,10 @@ const filteredDestinations = destinations.filter((dest) => {
   return matchesSearch && matchesCategory && matchesStatus;
 });
  const visibleDestinations = filteredDestinations.slice(0, visibleCount);
+  
 
     return (
-        <AppLayout breadcrumbs={breadcrumbs}>
+    <AppLayout breadcrumbs={breadcrumbs}>
             <Head title="Dashboard" />
    <div className="min-h-screen bg-background">      
       {/* Hero Section */}
@@ -172,7 +173,7 @@ const filteredDestinations = destinations.filter((dest) => {
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.6, delay: 4 * 0.1 }}
               >
-                <Card className="group hover:shadow-large transition-all duration-300 cursor-pointer overflow-hidden top-0">
+                <Card className="group hover:shadow-large transition-all duration-300 cursor-pointer overflow-hidden top-0 h-full">
                   <div className="relative">
                     <img
                       src={destination.image}
@@ -222,11 +223,13 @@ const filteredDestinations = destinations.filter((dest) => {
                     </div>
 
                     <div className=" items-center flex justify-between space-x-2">
-                      {/* <Link to={`/tour/${tour.id}`}> */}
-                      <div className="flex-1">
-                        <Button className="btn-ocean flex-1">
-                          View Details
-                        </Button>
+
+                      <div className="flex-1" >
+                     <Link href={route('tourist.tourDetails', destination.id)} >
+                          <Button className="btn-ocean flex-1">
+                            View Details
+                          </Button> 
+                        </Link>
                       </div>
                       <div className="flex-1 flex justify-end">
                       {/* <Link to={`/booking/${tour.id}`} className="ml-2"> */}

@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\DestinationsController;
 use App\Http\Controllers\Tourist\TouristDashboardController;
+use App\Http\Controllers\BookingController;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 
@@ -57,9 +58,21 @@ Route::middleware(['auth', 'verified'])->group(function () {
     
 //Tourist
   
-Route::get('/tourist/dashboard', [TouristDashboardController::class, 'index'])
-    ->name('tourist.dashboard');
+    Route::get('/tourist/dashboard', [TouristDashboardController::class, 'index'])
+        ->name('tourist.dashboard');
+    Route::get('/tourist/tours', [TouristDashboardController::class, 'tours'])
+        ->name('tourist.tours');
 
+    Route::get('/tourist/{destination}/tour', [TouristDashboardController::class, 'tourDetails'])
+        ->name('tourist.tourDetails')
+        ->where('destination', '[0-9]+');;
+
+    Route::get('/tourist/{destination}', [TouristDashboardController::class, 'tourBookings'])
+        ->name('tourist.tourBookings')
+        ->where('destination', '[0-9]+');
+    
+// Booking
+     Route::post('/bookings', [BookingController::class, 'store'])->name('Tourist.bookings.store');
 });
 
 

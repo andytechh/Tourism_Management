@@ -466,10 +466,10 @@ return (
 
 
 {/* Stats Cards */}
-<div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+<div className="grid grid-cols-1 md:grid-cols-4 gap-6 ">
   <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}>
-    <Card>
-      <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+    <Card  className='py-4'>
+      <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2 ">
         <CardTitle className="text-sm font-medium">Total Destinations</CardTitle>
         <MapPin className="h-4 w-4 text-muted-foreground" />
       </CardHeader>
@@ -481,7 +481,7 @@ return (
   </motion.div>
 
   <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }}>
-    <Card>
+    <Card className='py-4'>
       <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
         <CardTitle className="text-sm font-medium">Active Tours</CardTitle>
         <Star className="h-4 w-4 text-muted-foreground" />
@@ -498,7 +498,7 @@ return (
   </motion.div>
 
   <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }}>
-    <Card>
+    <Card  className='py-4'>
       <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
         <CardTitle className="text-sm font-medium">Total Bookings</CardTitle>
         <Users className="h-4 w-4 text-muted-foreground" />
@@ -515,7 +515,7 @@ return (
   </motion.div>
 
   <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.4 }}>
-    <Card>
+    <Card  className='py-4'>
       <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
         <CardTitle className="text-sm font-medium">Avg Rating</CardTitle>
         <Star className="h-4 w-4 text-muted-foreground" />
@@ -603,8 +603,8 @@ return (
                 </div>
               </div>
             </TableCell>
-            <TableCell>
-              <Badge variant="secondary">{destination.category}</Badge>
+            <TableCell >
+              <Badge className='text-white' variant="secondary">{destination.category}</Badge>
             </TableCell>
             <TableCell>
               <div className="flex items-center gap-1">
