@@ -25,7 +25,8 @@ import { Badge } from "@/components/ui/badge";
 import { Calendar as CalendarComponent } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { motion } from "framer-motion";
-// Use native Intl/date methods to avoid adding the date-fns dependency
+
+
 const format = (date?: Date, pattern?: string): string => {
   if (!date) return "";
   try {
@@ -41,6 +42,7 @@ const format = (date?: Date, pattern?: string): string => {
     return date.toString();
   }
 };
+
 import { cn } from "@/lib/utils";
 import { BreadcrumbItem } from "@/types";
 const breadcrumbs: BreadcrumbItem[] = [
@@ -91,6 +93,12 @@ export default function BookingForm({destination}: PageProps) {
     special_requests: "",
   });
 
+  
+  const formatPrice = (price: number | string) => {
+  return `₱${Number(price).toLocaleString('en-PH', {
+    minimumFractionDigits: 0,
+  })}`;
+  };
 
   // Mock tour data
   const tour = {
@@ -142,8 +150,8 @@ export default function BookingForm({destination}: PageProps) {
         </div>
 
         {/* Progress Steps */}
-        <div className="mb-8">
-          <div className="flex items-center justify-center space-x-8">
+        <div className="mb-8 ">
+          <div className="flex items-center justify-center space-x-8 overflow-x-auto px-4 lg:px-0 ml-10">
             {[
               { step: 1, title: "Select Date & Guests" },
               { step: 2, title: "Your Information" },
@@ -176,7 +184,7 @@ export default function BookingForm({destination}: PageProps) {
 
         <div className="grid lg:grid-cols-3 gap-8">
           {/* Main Form */}
-          <div className="lg:col-span-2">
+          <div className="lg:col-span-2 ">
             <motion.div
               key={step}
               initial={{ opacity: 0, x: 20 }}
@@ -247,7 +255,7 @@ export default function BookingForm({destination}: PageProps) {
                         <div className="flex items-center justify-between p-4 border rounded-lg">
                           <div>
                             <p className="font-medium">Adults</p>
-                            <p className="text-sm text-muted-foreground">₱{tour.price.toLocaleString()} per person</p>
+                            <p className="text-sm text-muted-foreground">{formatPrice(destination.price)} per person</p>
                           </div>
                           <div className="flex items-center space-x-3">
                             <Button
@@ -273,7 +281,7 @@ export default function BookingForm({destination}: PageProps) {
                         <div className="flex items-center justify-between p-4 border rounded-lg">
                           <div>
                             <p className="font-medium">Children (8-17 years)</p>
-                            <p className="text-sm text-muted-foreground">₱{(tour.price * 0.5).toLocaleString()} per child</p>
+                            <p className="text-sm text-muted-foreground">{formatPrice(destination.price * 0.5).toLocaleString()} per child</p>
                           </div>
                           <div className="flex items-center space-x-3">
                             <Button
@@ -478,12 +486,12 @@ export default function BookingForm({destination}: PageProps) {
                 {/* Tour Info */}
                 <div className="flex gap-3">
                   <img
-                    src={tour.image}
-                    alt={tour.title}
+                    src={destination.image}
+                    alt={destination.name}
                     className="w-16 h-16 object-cover rounded-lg"
                   />
                   <div className="flex-1">
-                    <h4 className="font-medium text-sm">{tour.title}</h4>
+                    <h4 className="font-medium text-sm">{destination.name}</h4>
                     <p className="text-sm text-muted-foreground">{tour.duration}</p>
                   </div>
                 </div>
@@ -516,12 +524,12 @@ export default function BookingForm({destination}: PageProps) {
                 <div className="space-y-2 text-sm">
                   <div className="flex justify-between">
                     <span>Adults ({adults})</span>
-                    <span>₱{(adults * tour.price).toLocaleString()}</span>
+                    <span>{formatPrice(adults * destination.price).toLocaleString()}</span>
                   </div>
                   {children > 0 && (
                     <div className="flex justify-between">
                       <span>Children ({children})</span>
-                      <span>₱{(children * tour.price * 0.5).toLocaleString()}</span>
+                      <span>{formatPrice(children * destination.price * 0.5).toLocaleString()}</span>
                     </div>
                   )}
                   <div className="flex justify-between">

@@ -116,7 +116,7 @@ const filteredDestinations = destinations.filter((dest) => {
             transition={{ duration: 0.6, delay: 0.2 }}
             className="bg-card rounded-2xl p-6 shadow-soft border border-border"
           >
-            <div className="flex flex-col lg:flex-row gap-4">
+            <div className="flex flex-col lg:flex-row gap-4 overflow-x-scroll lg:overflow-x-visible">
               {/* Search */}
               <div className="flex-1 relative">
                 <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-muted-foreground" />

@@ -24,21 +24,26 @@ class TouristDashboardController extends Controller
         return Inertia::render('Tourist/Home', compact('destinations'));
 
     }
-    public function tourDetails(Destinations $destination)
+   public function tourDetails($destination)
+{
+    $destinationData = Destinations::findOrFail($destination);
+    $destinationData->image = $destinationData->image 
+        ? asset('storage/' . $destinationData->image)
+        : asset('images/default.jpg'); 
+    $destinationData->formatted_price = '₱' . number_format($destinationData->price, 0);
+
+    return inertia('Tourist/ToursDetails', [
+        'destination' => $destinationData,
+    ]);
+}
+
+      public function tourBookings(Destinations $destination)
     {
         $destination->image = $destination->image 
             ? asset('storage/' . $destination->image)
             : asset('images/default.jpg'); 
         $destination->formatted_price = '₱' . number_format($destination->price, 0);
-        return Inertia::render('Tourist/ToursDetails', compact('destination'));
-
-        } 
-      public function tourBookings(Destinations $destination)
-    {
-        // $destination->image = $destination->image 
-        //     ? asset('storage/' . $destination->image)
-        //     : asset('images/default.jpg'); 
-        // $destination->formatted_price = '₱' . number_format($destination->price, 0);
+        
         return Inertia::render('Tourist/TouristBooking', compact('destination'));
 
         } 
