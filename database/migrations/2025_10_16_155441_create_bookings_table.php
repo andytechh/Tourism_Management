@@ -27,6 +27,7 @@ public function up(): void
         $table->string('phone');
         $table->string('nationality')->nullable();
         $table->text('special_requests')->nullable();
+        $table->string('payment_method')->default('gcash');
         $table->timestamps();
     });
 }

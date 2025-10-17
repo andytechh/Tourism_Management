@@ -21,6 +21,7 @@ class BookingController extends Controller
             'last_name' => 'required|string',
             'email' => 'required|email',
             'phone' => 'required|string',
+            'payment_method' => 'required|in:gcash,paymaya,bank',
         ]);
 
         $booking = Booking::create([
@@ -38,6 +39,7 @@ class BookingController extends Controller
             'nationality' => $request->nationality,
             'special_requests' => $request->special_requests,
             'status' => 'Pending',
+            'payment_method' => $request->payment_method ?? 'gcash',
         ]);
 
         return redirect()->route('tourist.dashboard')->with('success', 'Booking successfully created!');

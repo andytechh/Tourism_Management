@@ -48,7 +48,7 @@ export default function Home() {
   const [selectedCategory, setSelectedCategory] = useState("all");
   const [visibleCount, setVisibleCount] = useState(6);
   const {destinations =[], flash } = usePage().props as PageProps;
-  console.log(destinations);
+  
 
   const categories = [
     { id: "all", name: "All Tours" },
@@ -232,11 +232,11 @@ const filteredDestinations = destinations.filter((dest) => {
                         </Link>
                       </div>
                       <div className="flex-1 flex justify-end">
-                      {/* <Link to={`/booking/${tour.id}`} className="ml-2"> */}
+                       <Link href={route('tourist.tourBookings', {destination: destination.id})} className="ml-2"> 
                         <Button variant="outline">
                           Book Now
                         </Button>
-                      {/* </Link> */}
+                      </Link> 
                       </div>
                       
                     </div>
