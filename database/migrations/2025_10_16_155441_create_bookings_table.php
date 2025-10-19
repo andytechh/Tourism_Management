@@ -20,7 +20,7 @@ public function up(): void
         $table->integer('adults');
         $table->integer('children')->default(0);
         $table->decimal('total_price', 10, 2);
-        $table->string('status')->default('Pending');
+        $table->enum('status', ['pending', 'confirmed', 'cancelled',])->default('pending') ;
         $table->string('first_name');
         $table->string('last_name');
         $table->string('email');
@@ -28,6 +28,7 @@ public function up(): void
         $table->string('nationality')->nullable();
         $table->text('special_requests')->nullable();
         $table->string('payment_method')->default('gcash');
+        $table->enum('payment_status', ['unpaid', 'paid', 'refunded'])->default('unpaid');
         $table->timestamps();
     });
 }

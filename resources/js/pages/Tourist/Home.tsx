@@ -52,7 +52,7 @@ export default function Home() {
 
   const categories = [
     { id: "all", name: "All Tours" },
-    { id: "whale-shark", name: "Whale Shark" },
+    { id: "whaleshark", name: "Whale Shark" },
     { id: "nature", name: "Nature Experience" },
     { id: "cultural", name: "Cultural" },
     { id: "adventure", name: "Adventure" },

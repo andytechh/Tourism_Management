@@ -51,6 +51,15 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::delete('/admin/destinations/{destination}', [DestinationsController::class, 'destroy'])
         ->name('admin.destinations.destroy');
 
+//Admin Bookings
+    Route::get('/admin/bookings', [BookingController::class, 'index'])
+        ->name('admin.bookings');
+    Route::get('/admin/bookings/{booking}', [BookingController::class, 'show'])
+        ->name('admin.bookings.show');
+    Route::put('/admin/bookings/{booking}', [BookingController::class, 'update'])
+        ->name('admin.bookings.update');
+    Route::delete('/admin/bookings/{booking}', [BookingController::class, 'destroy'])
+    ->name('admin.bookings.destroy');
 //Staff
     Route::get('/staff/dashboard', function () {
         return Inertia::render('Staff/Dashboard');

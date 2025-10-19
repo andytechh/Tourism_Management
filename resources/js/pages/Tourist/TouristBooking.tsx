@@ -46,6 +46,8 @@ const format = (date?: Date, pattern?: string): string => {
 import { cn } from "@/lib/utils";
 import { BreadcrumbItem } from "@/types";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { stat } from "fs";
+import { toast } from "sonner";
 const breadcrumbs: BreadcrumbItem[] = [
     {
         title: 'Tours Details',
@@ -102,15 +104,13 @@ export default function BookingForm({destination}: PageProps) {
     phone: "",
     nationality: "",
     special_requests: "",
+    status: "pending",
     swimming: false,
     terms: false,
     newsletter: false,
     payment_method: paymentMethod,
   });
-  
-  console.log(data);
-
-  
+    
   const formatPrice = (price: number | string) => {
   return `₱${Number(price).toLocaleString('en-PH', {
     minimumFractionDigits: 0,
@@ -121,7 +121,6 @@ export default function BookingForm({destination}: PageProps) {
   const tour = {
     duration: "3-4 hours",
     maxGuests: 8,
-    image: "https://images.unsplash.com/photo-1559827260-dc66d52bef19?w=400&h=250&fit=crop",
     meetingPoint: "Donsol Visitor Center",
     includes: ["Professional guide", "Snorkeling gear", "Underwater photos", "Safety briefing"]
   };
@@ -138,7 +137,6 @@ const handleContinue = () => {
       alert("Please select a date, time, and at least one guest.");
       return;
     }
-    // Sync Step 1 data
     setData("booking_date", selectedDate.toISOString().split("T")[0]);
     setData("booking_time", selectedTime);
     setData("adults", adults);
@@ -147,7 +145,6 @@ const handleContinue = () => {
     setStep(2);
   } 
   else if (step === 2) {
-    // Validate required fields
     if (!data.first_name.trim()) {
       alert("Please enter your first name.");
       return;
@@ -175,11 +172,10 @@ const handleContinue = () => {
     setStep(3);
   } 
   else if (step === 3) {
-    // Final submission
+    // submission
     post(route('Tourist.bookings.store'), {
       preserveScroll: true,
       onSuccess: (page) => {
-        // Redirect or show success (optional)
         alert("Booking submitted! Please complete payment.");
       },
       onError: (errors) => {
@@ -194,16 +190,6 @@ const handleContinue = () => {
     if (step > 1) {
       setStep(step - 1);
     }
-  };
-
-   const handlePayment = async () => {
-    setIsLoading(true);
-    
-    // Simulate payment processing delay
-    setTimeout(() => {
-      setIsLoading(false);
-      alert("Payment successful! Booking completed.");
-    }, 2000);
   };
 
   return (
@@ -281,14 +267,14 @@ const handleContinue = () => {
                 variant="outline"
                 className={cn(
                   "w-full justify-start text-left font-normal h-12",
-                  !selectedDate && "text-muted-foreground"
+                  !selectedDate && "text-accent-foreground"
                 )}
               >
                 <Calendar className="mr-2 h-4 w-4" />
                 {selectedDate ? format(selectedDate, "PPP") : "Pick a date"}
               </Button>
             </PopoverTrigger>
-            <PopoverContent className="w-auto p-0" align="start">
+            <PopoverContent className="w-auto p-0 text-accent-foreground" align="start">
               <CalendarComponent
                 mode="single"
                 selected={selectedDate}
@@ -437,14 +423,14 @@ const handleContinue = () => {
 
           <div>
             <Label htmlFor="nationality">Nationality</Label>
-            <Select
+            <Select 
                 value={data.nationality}
                 onValueChange={(value) => setData("nationality", value)}
               >
               <SelectTrigger className="mt-1">
                 <SelectValue placeholder="Select your nationality" />
               </SelectTrigger>
-              <SelectContent>
+              <SelectContent className="text-accent-foreground">
                 <SelectItem value="philippines">Philippines</SelectItem>
                 <SelectItem value="usa">United States</SelectItem>
                 <SelectItem value="japan">Japan</SelectItem>

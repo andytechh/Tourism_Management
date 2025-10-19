@@ -6,28 +6,41 @@ use App\Models\Destinations;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Http\Request;
+use App\Models\Booking;
 use Inertia\Inertia;
 
 class DestinationsController extends Controller
 {
-    public function index()
-    {
-        $destinations = Destinations::all();
-        
-         $active_tours = $destinations->filter(function ($dest) {
-        return in_array(strtolower($dest->status), ['active', '1', 'true']);
-         })->count();
-         $stats = [
+public function index()
+{
+
+    $destinations = Destinations::withCount('bookings')->get();
+
+    $totalBookings = $destinations->sum('bookings_count');
+
+    $activeTours = $destinations->where('status', 'active')->count();
+
+    $avgRating = $destinations->avg('rating') ?? 0;
+    $destinationsWithPercentage = $destinations->map(function ($dest) use ($totalBookings) {
+        $dest->booking_percentage = $totalBookings > 0 
+            ? round(($dest->bookings_count / $totalBookings) * 100, 1) 
+            : 0;
+        return $dest;
+    });
+
+    $stats = [
         'total_destinations' => $destinations->count(),
-        'active_tours' => $active_tours,
-        'total_bookings' => $destinations->sum('bookings'),
-        'avg_rating' => $destinations->avg('rating') ?? 0,
+        'active_tours' => $activeTours,
+        'total_bookings' => $totalBookings,
+        'avg_rating' => round($avgRating, 1),
     ];
-        return Inertia::render('Admin/ManageDestinations', [
-            'destinations' => $destinations,
-            'stats' => $stats,
-        ]);
-    }
+
+    return Inertia::render('Admin/ManageDestinations', [
+        'destinations' => $destinationsWithPercentage, 
+        'stats' => $stats,
+    ]);
+}
+   
     public function store(Request $request)
     {
         $request->validate([

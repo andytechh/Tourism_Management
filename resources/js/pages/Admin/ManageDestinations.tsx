@@ -35,6 +35,7 @@
   import { Textarea } from "@/components/ui/textarea";
   import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
   import { motion } from "framer-motion"
+import { bookings } from '@/routes/admin';
   const breadcrumbs: BreadcrumbItem[] = [
       {
           title: 'Destinations Management',
@@ -48,7 +49,7 @@
     location: string;
     price: number;
     rating: number;
-    bookings: number;
+    bookings_count: number;
     description: string;
     status: string;
     image: string;        
@@ -99,7 +100,6 @@
         location: selectedDestination.location,
         price: selectedDestination.price.toString(),
         rating: selectedDestination.rating,
-        bookings: selectedDestination.bookings.toString(),  
         description: selectedDestination.description,
         status: selectedDestination.status,
         image: null,
@@ -179,7 +179,6 @@ if (!selectedDestination) return;
   if (data.location !== undefined && data.location !== null) formData.append('location', String(data.location));
   if (data.price !== undefined && data.price !== null) formData.append('price', String(data.price));
   if (data.rating !== undefined && data.rating !== null) formData.append('rating', String(data.rating));
-  if (data.bookings !== undefined && data.bookings !== null) formData.append('bookings', String(data.bookings));
   if (data.status !== undefined && data.status !== null) formData.append('status', String(data.status));
   if (data.description !== undefined && data.description !== null) formData.append('description', String(data.description));
    if (data.image instanceof File) {
@@ -277,9 +276,10 @@ return (
                     <SelectValue placeholder="Select category" />
                   </SelectTrigger>      
                   <SelectContent className="text-black">
-                    <SelectItem value="marine">Marine-Adventure</SelectItem>
-                    <SelectItem value="nature">Nature-Experience</SelectItem>
-                    <SelectItem value="cultural">Cultural-Tour</SelectItem>
+                    <SelectItem value="marine">Marine Adventure</SelectItem>
+                    <SelectItem value="nature">Nature Experience</SelectItem>
+                    <SelectItem value="cultural">Cultural Tour</SelectItem>
+                    <SelectItem value="whaleshark">Whale Shark</SelectItem>
                     <SelectItem value="adventure">Adventure</SelectItem>
                   </SelectContent>
                 </Select>
@@ -370,9 +370,10 @@ return (
             <SelectValue placeholder="Select category" />
           </SelectTrigger>
           <SelectContent className="text-black">
-            <SelectItem value="marine">Marine-Adventure</SelectItem>
-            <SelectItem value="nature">Nature-Experience</SelectItem>
-            <SelectItem value="cultural">Cultural-Tour</SelectItem>
+            <SelectItem value="marine">Marine Adventure</SelectItem>
+            <SelectItem value="nature">Nature Experience</SelectItem>
+            <SelectItem value="cultural">Cultural Tour</SelectItem>
+            <SelectItem value="whaleshark">Whale Shark</SelectItem>
             <SelectItem value="adventure">Adventure</SelectItem>
           </SelectContent>
         </Select>
@@ -506,10 +507,10 @@ return (
       <CardContent>
         <div className="text-2xl font-bold">{formatNumber(stats.total_bookings)}</div>
         <p className="text-xs text-muted-foreground">
-          {stats.total_bookings > 0 
-            ? Math.round((stats.total_bookings / stats.active_tours) * 100) + '% from last month'
-            : '0% from last month'}
-        </p>
+        {stats.active_tours > 0
+        ? `Avg ${Math.round(stats.total_bookings / stats.active_tours)} per tour`
+        : 'No active tours'}
+             </p>
       </CardContent>
     </Card>
   </motion.div>
@@ -551,9 +552,10 @@ return (
           </SelectTrigger>
           <SelectContent className="text-black">
             <SelectItem value="all">All Categories</SelectItem>
-            <SelectItem value="marine">Marine-Adventure</SelectItem>
-            <SelectItem value="nature">Nature-Experience</SelectItem>
-            <SelectItem value="cultural">Cultural-Tour</SelectItem>
+            <SelectItem value="marine">Marine Adventure</SelectItem>
+            <SelectItem value="nature">Nature Experience</SelectItem>
+            <SelectItem value="cultural">Cultural Tour</SelectItem>
+            <SelectItem value="whaleshark">Whale Shark</SelectItem>
             <SelectItem value="adventure">Adventure</SelectItem>
             </SelectContent>
           </Select>   
@@ -619,7 +621,7 @@ return (
                 {destination.rating}
               </div>
             </TableCell>
-            <TableCell>{destination.bookings}</TableCell>
+            <TableCell>{destination.bookings_count}</TableCell>
             <TableCell >
               <Badge className='text-white' variant={destination.status === "Active" ? "default" : "secondary"}>
                 {destination.status}

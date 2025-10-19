@@ -21,6 +21,7 @@ class Booking extends Model
         'first_name',
         'last_name',
         'email',
+        'payment_status',
         'phone',
         'nationality',
         'special_requests',
@@ -34,6 +35,6 @@ class Booking extends Model
 
     public function destination()
     {
-        return $this->belongsTo(Destinations::class);
+        return $this->belongsTo(Destinations::class, 'destination_id');
     }
 }

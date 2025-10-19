@@ -57,7 +57,7 @@ export function AppSidebar() {
     const mainNavItems: NavItem[] = menuItems[role] || [];
 
     return (
-        <Sidebar collapsible="icon" variant="inset">
+        <Sidebar collapsible="icon" variant="inset" className='text-accent-foreground'>
             <SidebarHeader>
                 <SidebarMenu>
                     <SidebarMenuItem>
@@ -70,7 +70,7 @@ export function AppSidebar() {
                 </SidebarMenu>
             </SidebarHeader>
 
-            <SidebarContent>
+            <SidebarContent className='text-accent-foreground-'>
                 <NavMain items={mainNavItems} />
             </SidebarContent>
 
