@@ -1,4 +1,3 @@
-  import { PlaceholderPattern } from '@/components/ui/placeholder-pattern';
   import AppLayout from '@/layouts/app-layout';
   import { type BreadcrumbItem } from '@/types';
   import { Head, useForm, usePage} from '@inertiajs/react';
@@ -17,7 +16,8 @@
     Users,
     Calendar,
     CheckCircle2Icon,
-    Megaphone
+    Megaphone,
+    ChevronDown
   } from "lucide-react";
   import {
     Alert,
@@ -35,7 +35,9 @@
   import { Textarea } from "@/components/ui/textarea";
   import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
   import { motion } from "framer-motion"
-import { bookings } from '@/routes/admin';
+import { DropdownMenuCheckboxItem, DropdownMenuLabel, DropdownMenuSeparator } from '@radix-ui/react-dropdown-menu';
+import { Checkbox } from '@/components/ui/checkbox';
+
   const breadcrumbs: BreadcrumbItem[] = [
       {
           title: 'Destinations Management',
@@ -51,7 +53,11 @@ import { bookings } from '@/routes/admin';
     rating: number;
     bookings_count: number;
     description: string;
+    duration: string;
     status: string;
+    package_options: string;
+    guests_min: number;
+    guests_max: number;
     image: string;        
     created_at: string;
     updated_at: string;
@@ -80,32 +86,58 @@ import { bookings } from '@/routes/admin';
     const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
     const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
     const [selectedDestination, setSelectedDestination] = useState<Destinations | null>(null);
+    const [packageOptions, setPackageOptions] = useState({
+    individual: false,
+    group: false,
+    family: false,
+    private: false,
+  });
     const { data, put, setData, post, processing, errors, delete: destroy, reset: resetInertiaForm } = useForm({
       name: '',
       category: '',
       location:  '',
       price:  '',
+      duration: '',
       rating: '',
       bookings: '',
       description:  '',
+      guests_min: '',
+      guests_max: '',
       status:  '',
+      package_options: [] as string[],
       image: null as File | null,
     });
 
+
   useEffect(() => {
-    if (selectedDestination) {
-      setData({
-        name: selectedDestination.name,
-        category: selectedDestination.category,
-        location: selectedDestination.location,
-        price: selectedDestination.price.toString(),
-        rating: selectedDestination.rating,
-        description: selectedDestination.description,
-        status: selectedDestination.status,
-        image: null,
-      });
+  if (selectedDestination) {
+    let packageOptions = [];
+    try {
+      if (typeof selectedDestination.package_options === 'string') {
+        packageOptions = JSON.parse(selectedDestination.package_options);
+      } else if (Array.isArray(selectedDestination.package_options)) {
+        packageOptions = selectedDestination.package_options;
+      }
+    } catch (e) {
+      packageOptions = [];
     }
-  }, [selectedDestination, setData]);
+
+    setData({
+      name: selectedDestination.name,
+      category: selectedDestination.category,
+      location: selectedDestination.location,
+      price: selectedDestination.price.toString(),
+      duration: selectedDestination.duration?.toString() || '',
+      guests_min: selectedDestination.guests_min?.toString() || '',
+      guests_max: selectedDestination.guests_max?.toString() || '',
+      rating: selectedDestination.rating,
+      description: selectedDestination.description,
+      status: selectedDestination.status,
+      package_options: packageOptions,
+      image: null,
+    });
+  }
+}, [selectedDestination, setData]);
 
   const formatDate = (dateString: string): string => {
         const options: Intl.DateTimeFormatOptions = { 
@@ -179,7 +211,11 @@ if (!selectedDestination) return;
   if (data.location !== undefined && data.location !== null) formData.append('location', String(data.location));
   if (data.price !== undefined && data.price !== null) formData.append('price', String(data.price));
   if (data.rating !== undefined && data.rating !== null) formData.append('rating', String(data.rating));
-  if (data.status !== undefined && data.status !== null) formData.append('status', String(data.status));
+  if (data.status !== undefined && data.status !== null) formData.append('status', String(data.status));  
+  if (data.guests_min !== undefined && data.guests_min !== null) formData.append('guests_min', String(data.guests_min));
+  if (data.guests_max !== undefined && data.guests_max !== null) formData.append('guests_max', String(data.guests_max));
+  if (data.duration !== undefined && data.duration !== null) formData.append('duration', String(data.duration));
+  if (data.package_options !== undefined && data.package_options !== null) formData.append('package_options', JSON.stringify(data.package_options));
   if (data.description !== undefined && data.description !== null) formData.append('description', String(data.description));
    if (data.image instanceof File) {
     formData.append('image', data.image); 
@@ -244,7 +280,7 @@ return (
               Add Destination
           </Button>
         </DialogTrigger>
-        <DialogContent className="max-w-2xl">
+        <DialogContent className="max-w-2xl text-accent-foreground">
           <form onSubmit={handleSumbit} encType="multipart/form-data">
             {/* Errors Checks */}
             {Object.keys(errors).length > 0 && (<Alert>
@@ -275,7 +311,7 @@ return (
                   <SelectTrigger>
                     <SelectValue placeholder="Select category" />
                   </SelectTrigger>      
-                  <SelectContent className="text-black">
+                  <SelectContent className='text-accent-foreground'>
                     <SelectItem value="marine">Marine Adventure</SelectItem>
                     <SelectItem value="nature">Nature Experience</SelectItem>
                     <SelectItem value="cultural">Cultural Tour</SelectItem>
@@ -292,10 +328,71 @@ return (
               <Label htmlFor="price">Price</Label>
               <Input id="price" placeholder="₱0.00" value={data.price} onChange={(e) => setData('price', e.target.value)} required/>
             </div>
+
+             <div className="space-y-2">
+              <Label htmlFor="duration">Time duration</Label>
+              <Input id="duration" placeholder="0" value={data.duration} onChange={(e) => setData('duration', e.target.value)} required/>
+            </div> 
+
+             <div className="space-y-2">
+              <Label htmlFor="min guests">Min Guests</Label>
+              <Input id="guests_min" placeholder="1" value={data.guests_min} onChange={(e) => setData('guests_min', e.target.value)} required/>
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="max guests">Max Guests</Label>
+              <Input id="guests_max" placeholder="8" value={data.guests_max} onChange={(e) => setData('guests_max', e.target.value)}/>
+            </div>  
+
+        {/* Package Options Dropdown */}
+          <div className="space-y-2">
+            <Label>Package Options</Label>
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="outline" className="w-full justify-between">
+                  {data.package_options.length > 0
+                    ? `${data.package_options.length} selected`
+                    : 'Select package types'} 
+                  <ChevronDown className="w-4 h-4 opacity-50" />
+                </Button>
+              </DropdownMenuTrigger>
+             <DropdownMenuContent
+                className="w-56 text-accent-foreground"
+                onInteractOutside={(e) => {
+                }}
+                onClick={(e) => e.stopPropagation()}
+              >
+                <DropdownMenuLabel>Package Types</DropdownMenuLabel>
+                <DropdownMenuSeparator />
+                {([' individual ', ' group ', ' family ', ' private '] as const).map((option) => (
+                  <DropdownMenuItem
+                    key={option}
+                    className="cursor-pointer flex items-center gap-2 px-2 py-1.5 rounded-sm hover:bg-accent focus:bg-accent outline-none"
+                    onSelect={(e) => e.preventDefault()} 
+                  >
+                    <Checkbox
+                      checked={data.package_options.includes(option)}
+                      required
+                      onCheckedChange={(checked) => {
+                        const newOptions = checked
+                          ? [...data.package_options, option]
+                          : data.package_options.filter((item) => item !== option);
+                        setData('package_options', newOptions);
+                      }}
+                      className="rounded-sm"
+                    />
+                    <span>{option.charAt(0).toUpperCase() + option.slice(1)}</span>
+                  </DropdownMenuItem>
+                ))}
+              </DropdownMenuContent>
+            </DropdownMenu>
+          </div>
+            
             <div className="col-span-2 space-y-2">
               <Label htmlFor="description">Description</Label>
               <Textarea id="description" placeholder="Enter destination description" value={data.description} onChange={(e) => setData('description', e.target.value)}/>
             </div>
+
         <div className="col-span-2 space-y-2">
         <Label htmlFor="description">Destination image</Label>
             <Input
@@ -329,7 +426,7 @@ return (
           if (open) setIsAddDialogOpen(false); 
         }}
       >
-      <DialogContent className="sm:max-w-[600px]">
+      <DialogContent className="sm:max-w-[600px] text-accent-foreground">
         <form onSubmit={handleUpdate} encType="multipart/form-data"> 
           
           {/* Errors Checks */}
@@ -369,7 +466,7 @@ return (
           <SelectTrigger>
             <SelectValue placeholder="Select category" />
           </SelectTrigger>
-          <SelectContent className="text-black">
+          <SelectContent className="text-accent-foreground">
             <SelectItem value="marine">Marine Adventure</SelectItem>
             <SelectItem value="nature">Nature Experience</SelectItem>
             <SelectItem value="cultural">Cultural Tour</SelectItem>
@@ -388,7 +485,7 @@ return (
           <SelectTrigger>
             <SelectValue placeholder="Update Status" />
           </SelectTrigger>
-          <SelectContent className="text-black">
+          <SelectContent >
             <SelectItem value="active">Active</SelectItem>
             <SelectItem value="inactive">Inactive</SelectItem>
             <SelectItem value="draft">Draft</SelectItem>
@@ -415,6 +512,63 @@ return (
           onChange={(e) => setData('price', e.target.value)}
         />
       </div>
+
+      <div className="space-y-2">
+        <Label htmlFor="edit-guests-min">Min Guests</Label>
+        <Input
+          id="edit-guests-min"
+          type="number"
+          value={data.guests_min}
+          onChange={(e) => setData('guests_min', e.target.value)}
+        />
+      </div>
+
+      <div className="space-y-2">
+        <Label htmlFor="edit-guests-max">Max Guests</Label>
+        <Input
+          id="edit-guests-max"
+          type="number"
+          value={data.guests_max}
+          onChange={(e) => setData('guests_max', e.target.value)}
+        />
+      </div>
+
+      {/* Package Options */}
+      <div className="space-y-2">
+        <Label>Package Options</Label>
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button variant="outline" className="w-full justify-between">
+              {data.package_options.length > 0
+                ? `${data.package_options.length} selected`
+                : 'Select package types'}
+              <ChevronDown className="w-4 h-4 opacity-50" />
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent className="w-56">
+            <DropdownMenuLabel>Package Types</DropdownMenuLabel>
+            <DropdownMenuSeparator />
+            {(['individual', 'group', 'family', 'private'] as const).map((option) => (
+              <DropdownMenuItem
+                key={option}
+                className="cursor-pointer flex items-center gap-2 px-2 py-1.5 hover:bg-accent"
+                onSelect={(e) => e.preventDefault()}
+              >
+                <Checkbox
+                  checked={data.package_options.includes(option)}
+                  onCheckedChange={(checked) => {
+                    const newOptions = checked
+                      ? [...data.package_options, option]
+                      : data.package_options.filter((item) => item !== option);
+                    setData('package_options', newOptions);
+                  }}
+                />
+                <span>{option.charAt(0).toUpperCase() + option.slice(1)}</span>
+              </DropdownMenuItem>
+            ))}
+          </DropdownMenuContent>
+        </DropdownMenu>
+  </div>
 
       <div className="col-span-2 space-y-2">
         <Label htmlFor="edit-description">Description</Label>
@@ -446,7 +600,7 @@ return (
     </div>
   )}
 
-  <div className="flex justify-end gap-2 mt-4">
+  <div className="flex justify-end gap-2 mt-4 text-accent-foreground">
     <Button
       type="button"
       variant="outline"
@@ -532,7 +686,7 @@ return (
 {/* Search and Filters */}
 <Card>
   <CardHeader>
-    <div className="flex items-center justify-between">
+    <div className="flex items-center justify-between text-accent-foreground">
       <CardTitle className='overflow-hidden w-24'>Destinations</CardTitle>
       <div className="flex items-center gap-2">
         <div className="relative">
@@ -550,7 +704,7 @@ return (
              <Filter className="w-4 h-4 mr-1" />
             <SelectValue className='text-black' placeholder="Filter" />
           </SelectTrigger>
-          <SelectContent className="text-black">
+          <SelectContent className="text-accent-foreground">
             <SelectItem value="all">All Categories</SelectItem>
             <SelectItem value="marine">Marine Adventure</SelectItem>
             <SelectItem value="nature">Nature Experience</SelectItem>
@@ -564,7 +718,7 @@ return (
           <SelectTrigger className="w-full">
             <SelectValue placeholder="Status" />
           </SelectTrigger>
-          <SelectContent className="text-black">
+          <SelectContent className="text-accent-foreground">
             <SelectItem value="all">All Statuses</SelectItem>
             <SelectItem value="active">Active</SelectItem>
             <SelectItem value="inactive">Inactive</SelectItem>
@@ -575,7 +729,7 @@ return (
       </div>
     </div>
   </CardHeader>
-  <CardContent>
+  <CardContent className='text-accent-foreground'>
     <Table>
       <TableHeader>
         <TableRow>
@@ -634,7 +788,7 @@ return (
                     <MoreHorizontal className="h-4 w-4" />
                   </Button>
                 </DropdownMenuTrigger>
-                <DropdownMenuContent align="end" className='text-black'>
+                <DropdownMenuContent align="end" className='text-accent-foreground'>
                   <DropdownMenuItem>
                     <Eye className="mr-2 h-4 w-4" />
                     View Details

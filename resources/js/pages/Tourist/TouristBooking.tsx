@@ -66,7 +66,8 @@ interface Destination {
   bookings: number;
   description: string;
   status: string;
-  image: string;        
+  image: string; 
+  guests_max: number;
   created_at: string;
   updated_at: string;
 }
@@ -82,6 +83,7 @@ export default function BookingForm({destination}: PageProps) {
   const [children, setChildren] = useState(0);
   const [step, setStep] = useState(1);
   const [paymentMethod, setPaymentMethod] = useState("gcash");
+  const [bookingType, setBookingType] = useState<"individual" | "package">("individual");
   const [isLoading, setIsLoading] = useState(false);
   const [amount, setAmount] = useState("");
   const [cardDetails, setCardDetails] = useState({
@@ -108,6 +110,7 @@ export default function BookingForm({destination}: PageProps) {
     swimming: false,
     terms: false,
     newsletter: false,
+    booking_type: bookingType,
     payment_method: paymentMethod,
   });
     
@@ -127,11 +130,13 @@ export default function BookingForm({destination}: PageProps) {
 
   const availableTimes = ["6:00 AM", "10:00 AM", "2:00 PM"];
   const totalGuests = adults + children;
-  const subtotal = adults * destination.price + children * (destination.price * 0.5);
-  const serviceFee = subtotal * 0.1;
-  const total = subtotal + serviceFee;
+  const isPackage = bookingType === "package";
+  const subtotal = isPackage 
+    ? destination.price 
+    : (adults * (destination.price * .25) + (children * .30) * (destination.price * 0.5));
+  const total = subtotal;
 
-const handleContinue = () => {
+  const handleContinue = () => {
   if (step === 1) {
     if (!selectedDate || !selectedTime || totalGuests === 0) {
       alert("Please select a date, time, and at least one guest.");
@@ -142,6 +147,7 @@ const handleContinue = () => {
     setData("adults", adults);
     setData("children", children);
     setData("total_price", total);
+    setData("booking_type", bookingType);
     setStep(2);
   } 
   else if (step === 2) {
@@ -240,7 +246,7 @@ const handleContinue = () => {
     </div>
 
 <div className="grid lg:grid-cols-3 gap-8">
-{/* Main Form */}
+
 <div className="lg:col-span-2 ">
 <motion.div
   key={step}
@@ -305,19 +311,57 @@ const handleContinue = () => {
         </div>
 
         {/* Guest Selection */}
-        <div className="space-y-4">
-          <Label className="text-base font-medium">Number of Guests</Label>
-          
-          <div className="space-y-3">
-            <div className="flex items-center justify-between p-4 border rounded-lg">
-              <div>
-                <p className="font-medium">Adults</p>
-                <p className="text-sm text-muted-foreground">{formatPrice(destination.price)} per person</p>
-              </div>
-              <div className="flex items-center space-x-3">
+        {/* Booking Type Selection */}
+<div className="space-y-4">
+  <Label className="text-base font-medium">Select Booking Type</Label>
+  
+  <RadioGroup
+    value={bookingType}
+    onValueChange={(value: "individual" | "package") => {
+      setBookingType(value);
+      if (value === "package") {
+        setAdults(destination.guests_max);
+        setChildren(0);
+      } else {
+        setAdults(1);
+        setChildren(0);
+      }
+    }}
+    className="space-y-3"
+  >
+    {/* Package Option */}
+    <div className="flex items-start space-x-3 p-4 border rounded-lg">
+      <RadioGroupItem value="package" id="package" className="mt-1" />
+      <div className="flex-1">
+        <Label htmlFor="package" className="font-medium block">
+          Group Package
+        </Label>
+        <p className="text-sm text-muted-foreground mt-1">
+          Fixed group size: {destination.guests_max} persons • {formatPrice(destination.price)} total
+        </p>
+      </div>
+    </div>
+
+    {/* Individual Option */}
+    <div className="flex items-start space-x-3 p-4 border rounded-lg">
+      <RadioGroupItem value="individual" id="individual" className="mt-1" />
+      <div className="flex-1">
+        <Label htmlFor="individual" className="font-medium block">
+          Individual/Private
+        </Label>
+        <p className="text-sm text-muted-foreground mt-1">
+          {formatPrice(destination.price * .25)} per person
+        </p>
+        
+        {/* Only show guest counters for individual */}
+        {bookingType === "individual" && (
+          <div className="mt-3 space-y-2">
+            <div className="flex items-center justify-between">
+              <span className="text-sm">Adults</span>
+              <div className="flex items-center space-x-2">
                 <Button
                   variant="outline"
-                  size="icon"
+                  size="sm"
                   onClick={() => setAdults(Math.max(1, adults - 1))}
                   disabled={adults <= 1}
                 >
@@ -326,24 +370,21 @@ const handleContinue = () => {
                 <span className="w-8 text-center font-medium">{adults}</span>
                 <Button
                   variant="outline"
-                  size="icon"
-                  onClick={() => setAdults(Math.min(8, adults + 1))}
-                  disabled={totalGuests >= 8}
+                  size="sm"
+                  onClick={() => setAdults(adults + 1)}
+                  disabled={adults + children >= 8}
                 >
                   +
                 </Button>
               </div>
             </div>
-
-            <div className="flex items-center justify-between p-4 border rounded-lg">
-              <div>
-                <p className="font-medium">Children (8-17 years)</p>
-                <p className="text-sm text-muted-foreground">{formatPrice(destination.price * 0.5).toLocaleString()} per child</p>
-              </div>
-              <div className="flex items-center space-x-3">
+            
+            <div className="flex items-center justify-between">
+              <span className="text-sm">Children (30% off)</span>
+              <div className="flex items-center space-x-2">
                 <Button
                   variant="outline"
-                  size="icon"
+                  size="sm"
                   onClick={() => setChildren(Math.max(0, children - 1))}
                   disabled={children <= 0}
                 >
@@ -352,23 +393,27 @@ const handleContinue = () => {
                 <span className="w-8 text-center font-medium">{children}</span>
                 <Button
                   variant="outline"
-                  size="icon"
-                  onClick={() => setChildren(Math.min(8 - adults, children + 1))}
-                  disabled={totalGuests >= 8}
+                  size="sm"
+                  onClick={() => setChildren(children + 1)}
+                  disabled={adults + children >= 8}
                 >
                   +
                 </Button>
               </div>
             </div>
           </div>
+        )}
+      </div>
+    </div>
+  </RadioGroup>
 
-          {totalGuests >= 8 && (
-            <div className="flex items-center gap-2 p-3 bg-amber-50 border border-amber-200 rounded-lg">
-              <AlertCircle className="w-4 h-4 text-amber-600" />
-              <p className="text-sm text-amber-700">Maximum group size is 8 people</p>
-            </div>
-          )}
-        </div>
+  {totalGuests >= 8 && bookingType === "individual" && (
+    <div className="flex items-center gap-2 p-3 bg-amber-50 border border-amber-200 rounded-lg">
+      <AlertCircle className="w-4 h-4 text-amber-600" />
+      <p className="text-sm text-amber-700">Maximum group size is 8 people</p>
+    </div>
+  )}
+</div>
       </CardContent>
     </Card>
   )}
@@ -621,29 +666,33 @@ const handleContinue = () => {
 
         <Separator />
 
-        {/* Price Breakdown */}
-        <div className="space-y-2 text-sm">
-          <div className="flex justify-between">
-            <span>Adults ({adults})</span>
-            <span>{formatPrice(adults * destination.price).toLocaleString()}</span>
-          </div>
-          {children > 0 && (
-            <div className="flex justify-between">
-              <span>Children ({children})</span>
-              <span>{formatPrice(children * destination.price * 0.5).toLocaleString()}</span>
+       {/* Price Breakdown */}
+          <div className="space-y-2 text-sm">
+            {isPackage ? (
+              <div className="flex justify-between">
+                <span>Group Package ({destination.guests_max} persons)</span>
+                <span>{formatPrice(destination.price)}</span>
+              </div>
+            ) : (
+              <>
+                <div className="flex justify-between">
+                  <span>Adults ({adults})</span>
+                  <span>{formatPrice((adults * .25) * destination.price)}</span>
+                </div>
+                {children > 0 && (
+                  <div className="flex justify-between">
+                    <span>Children ({children})</span>
+                    <span>{formatPrice((children * .30) * destination.price * 0.5)}</span>
+                  </div>
+                )}
+              </>
+            )}
+            <Separator />
+            <div className="flex justify-between font-semibold text-base">
+              <span>Total</span>
+              <span>₱{total.toLocaleString()}</span>
             </div>
-          )}
-          <div className="flex justify-between">
-            <span>Service Fee</span>
-            <span>₱{serviceFee.toLocaleString()}</span>
           </div>
-          <Separator />
-          <div className="flex justify-between font-semibold text-base">
-            <span>Total</span>
-            <span>₱{total.toLocaleString()}</span>
-          </div>
-        </div>
-
         {/* Includes */}
         <div className="space-y-2">
           <h4 className="font-medium text-sm">Includes:</h4>

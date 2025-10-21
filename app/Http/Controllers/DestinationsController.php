@@ -40,9 +40,10 @@ public function index()
         'stats' => $stats,
     ]);
 }
-   
+ 
     public function store(Request $request)
     {
+        
         $request->validate([
             'name' => 'required|string|max:255',
             'category' => 'required|string',
@@ -52,7 +53,13 @@ public function index()
             'bookings' => 'nullable|integer', 
             'status' => 'nullable|string',
             'description' => 'required|string',
+            'package_options' => 'array',
+            'package_options.*' => 'in:individual,group,family,private',
+            'guests_min' => 'required|integer',
+            'guests_max' => 'sometimes|nullable|integer',      
+            'duration' => 'required|string',
             'image' => 'required|image|mimes:jpeg,png,jpg,gif|max:2048',
+
         ]);
 
         $imagePath = $request->file('image')->store('destinations', 'public');
@@ -63,9 +70,13 @@ public function index()
             'location' => $request->location,
             'price' => $request->price,
             'rating' => $request->rating,
+            'guests_min' => $request->guests_min,
+            'guests_max' => $request->guests_max,
+            'duration' => $request->duration,
             'bookings' => $request->bookings ?? 0,
             'status' => $request->status ?? 'Active',
             'description' => $request->description,
+            'package_options' => $request->package_options,
             'image' => $imagePath,
         ]);
 
@@ -89,6 +100,11 @@ public function index()
         'rating' => 'sometimes|nullable|numeric',
         'bookings' => 'sometimes|nullable|integer',
         'status' => 'sometimes|nullable|string',
+        'package_options' => 'sometimes|array',
+        'package_options.*' => 'in:individual,group,family,private',
+        'guests_min' => 'required|integer',
+        'guests_max' => 'sometimes|nullable|integer',      
+        'duration' => 'required|string',
         'description' => 'sometimes|string',
         'image' => 'nullable|file|image|mimes:jpeg,png,jpg,gif|max:2048',
     ]);
@@ -104,7 +120,10 @@ public function index()
     } else {
         unset($validated['image']);
     }
-     
+    
+    if ($request->has('package_options')) {
+        $validated['package_options'] = $request->package_options;
+    }
     $destination->update($validated);
 
     return redirect()

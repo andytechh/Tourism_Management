@@ -25,6 +25,7 @@ public function up(): void
         $table->string('last_name');
         $table->string('email');
         $table->string('phone');
+        $table->enum('booking_type', ['package', 'individual']);
         $table->string('nationality')->nullable();
         $table->text('special_requests')->nullable();
         $table->string('payment_method')->default('gcash');

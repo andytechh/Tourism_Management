@@ -21,6 +21,10 @@ return new class extends Migration
             $table->integer('bookings')->default(0);;
             $table->enum('status', ['active', 'inactive', 'draft',])->default('active') ;
             $table->string('image');
+            $table->set('package_options', ['individual', 'group', 'private', 'shared'])->default('individual');
+            $table->string('guests_count')->default(   1);
+            $table->string('duration')->default('3 hours');
+            $table->time('booking_time');
             $table->string('description');
             $table->timestamps();
         });

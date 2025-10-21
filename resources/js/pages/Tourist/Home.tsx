@@ -32,6 +32,8 @@ interface Destinations{
     status: string;
     image: string;        
     created_at: string;
+    guests_max: number;
+    duration: number;
     updated_at: string;
   }
 interface PageProps {
@@ -206,15 +208,15 @@ const filteredDestinations = destinations.filter((dest) => {
                     </CardDescription>
                   </CardHeader>
 
-                  <CardContent className="pt-0">
-                    <div className="grid grid-cols-3 gap-6 mb-4 text-sm text-muted-foreground">
+                  <CardContent className="pt-0 ">
+                    <div className="w-full grid grid-cols-3 gap-6 mb-4 text-sm text-muted-foreground text-center">
                       <div className="flex items-center">
                         <MapPin className="w-4 h-4 mr-1" />
-                         {destination.location} 
+                         {destination.duration} 
                       </div>
                       <div className="flex items-center">
                         <Users className="w-4 h-4 mr-1" />
-                        Max {destination.price} Guests
+                        Max {destination.guests_max} Guests
                       </div>
                       <div className="flex items-center">
                         <Calendar className="w-4 h-4 mr-1" />
