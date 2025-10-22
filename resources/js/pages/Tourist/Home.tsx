@@ -49,7 +49,7 @@ export default function Home() {
   const [visibleCount, setVisibleCount] = useState(6);
   const {destinations =[], flash } = usePage().props as PageProps;
   
-
+ 
   const categories = [
     { id: "all", name: "All Tours" },
     { id: "whaleshark", name: "Whale Shark" },
@@ -64,7 +64,6 @@ export default function Home() {
     minimumFractionDigits: 0,
   })}`;
 };
-
 
 const handleLoadMore = () => {
   setVisibleCount((prev) => prev + 6);

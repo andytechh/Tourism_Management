@@ -244,7 +244,7 @@ return (
               Add Destination
           </Button>
         </DialogTrigger>
-        <DialogContent className="max-w-2xl">
+        <DialogContent className="max-w-2xl text-accent-foreground">
           <form onSubmit={handleSumbit} encType="multipart/form-data">
             {/* Errors Checks */}
             {Object.keys(errors).length > 0 && (<Alert>
@@ -266,7 +266,7 @@ return (
               <Label htmlFor="name">Destination Name</Label>
               <Input id="name" placeholder="Enter destination name" value={data.name} onChange={(e) => setData('name', e.target.value)} required/>
             </div>
-            <div className="space-y-2">
+            <div className="space-y-2 text-accent-foreground">
                 <Label htmlFor="category">Category</Label>
                 <Select 
                   value={data.category} 
@@ -275,7 +275,7 @@ return (
                   <SelectTrigger>
                     <SelectValue placeholder="Select category" />
                   </SelectTrigger>      
-                  <SelectContent className="text-black">
+                  <SelectContent className='text-accent-foreground'>
                     <SelectItem value="marine">Marine Adventure</SelectItem>
                     <SelectItem value="nature">Nature Experience</SelectItem>
                     <SelectItem value="cultural">Cultural Tour</SelectItem>
@@ -329,7 +329,7 @@ return (
           if (open) setIsAddDialogOpen(false); 
         }}
       >
-      <DialogContent className="sm:max-w-[600px]">
+      <DialogContent className="sm:max-w-[600px] text-accent-foreground">
         <form onSubmit={handleUpdate} encType="multipart/form-data"> 
           
           {/* Errors Checks */}
@@ -369,7 +369,7 @@ return (
           <SelectTrigger>
             <SelectValue placeholder="Select category" />
           </SelectTrigger>
-          <SelectContent className="text-black">
+          <SelectContent >
             <SelectItem value="marine">Marine Adventure</SelectItem>
             <SelectItem value="nature">Nature Experience</SelectItem>
             <SelectItem value="cultural">Cultural Tour</SelectItem>
@@ -544,13 +544,13 @@ return (
             className="pl-10 w-64 md:w-80 overflow-hidden"
           />
         </div>
-      <div className="w-50">
+      <div className="w-50 text-accent-foreground">
       <Select value={categoryFilter} onValueChange={setCategoryFilter}>
           <SelectTrigger>
              <Filter className="w-4 h-4 mr-1" />
-            <SelectValue className='text-black' placeholder="Filter" />
+            <SelectValue placeholder="Filter" />
           </SelectTrigger>
-          <SelectContent className="text-black">
+          <SelectContent className="text-accent-foreground">
             <SelectItem value="all">All Categories</SelectItem>
             <SelectItem value="marine">Marine Adventure</SelectItem>
             <SelectItem value="nature">Nature Experience</SelectItem>
@@ -564,7 +564,7 @@ return (
           <SelectTrigger className="w-full">
             <SelectValue placeholder="Status" />
           </SelectTrigger>
-          <SelectContent className="text-black">
+          <SelectContent className='text-accent-foreground'>
             <SelectItem value="all">All Statuses</SelectItem>
             <SelectItem value="active">Active</SelectItem>
             <SelectItem value="inactive">Inactive</SelectItem>
@@ -634,7 +634,7 @@ return (
                     <MoreHorizontal className="h-4 w-4" />
                   </Button>
                 </DropdownMenuTrigger>
-                <DropdownMenuContent align="end" className='text-black'>
+                <DropdownMenuContent align="end" className='text-accent-foreground'>
                   <DropdownMenuItem>
                     <Eye className="mr-2 h-4 w-4" />
                     View Details
