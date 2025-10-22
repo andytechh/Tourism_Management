@@ -315,10 +315,10 @@ export default function Bookings() {
               <TableHead>Actions</TableHead>
             </TableRow>
           </TableHeader>
-          <TableBody>
+          <TableBody className='text-accent-foreground'>
             {filteredBookings.map((bookings) => (
               
-              <TableRow key={bookings.id} className='text-foreground-secondary hover:accent-foreground'>
+              <TableRow key={bookings.id} className='text-accent-foreground hover:accent-foreground'>
                 <TableCell className="font-medium">BK00{bookings.id}</TableCell>
                 <TableCell>
                   <div>

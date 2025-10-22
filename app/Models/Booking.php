@@ -26,6 +26,7 @@ class Booking extends Model
         'nationality',
         'special_requests',
         'payment_method', 
+        'booking_type',
     ];
 
     public function user()

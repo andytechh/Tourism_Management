@@ -53,6 +53,7 @@ class BookingController extends Controller
             'last_name' => 'required|string',
             'email' => 'required|email',
             'phone' => 'required|string',
+            'booking_type' => 'required|in:package,individual',
             'payment_method' => 'required|in:gcash,paymaya,bank',
         ]);
 
@@ -69,6 +70,7 @@ class BookingController extends Controller
             'email' => $request->email,
             'phone' => $request->phone,
             'nationality' => $request->nationality,
+            'booking_type' => $request->booking_type,
             'special_requests' => $request->special_requests,
             'status' => 'pending',
             'payment_status' => 'unpaid',
