@@ -302,7 +302,7 @@ return (
               <Label htmlFor="name">Destination Name</Label>
               <Input id="name" placeholder="Enter destination name" value={data.name} onChange={(e) => setData('name', e.target.value)} required/>
             </div>
-            <div className="space-y-2">
+            <div className="space-y-2 text-accent-foreground">
                 <Label htmlFor="category">Category</Label>
                 <Select 
                   value={data.category} 
@@ -466,7 +466,11 @@ return (
           <SelectTrigger>
             <SelectValue placeholder="Select category" />
           </SelectTrigger>
+<<<<<<< HEAD
+          <SelectContent >
+=======
           <SelectContent className="text-accent-foreground">
+>>>>>>> bc621ce1700984a087cb9410181c30956d6a72c8
             <SelectItem value="marine">Marine Adventure</SelectItem>
             <SelectItem value="nature">Nature Experience</SelectItem>
             <SelectItem value="cultural">Cultural Tour</SelectItem>
@@ -698,11 +702,11 @@ return (
             className="pl-10 w-64 md:w-80 overflow-hidden"
           />
         </div>
-      <div className="w-50">
+      <div className="w-50 text-accent-foreground">
       <Select value={categoryFilter} onValueChange={setCategoryFilter}>
           <SelectTrigger>
              <Filter className="w-4 h-4 mr-1" />
-            <SelectValue className='text-black' placeholder="Filter" />
+            <SelectValue placeholder="Filter" />
           </SelectTrigger>
           <SelectContent className="text-accent-foreground">
             <SelectItem value="all">All Categories</SelectItem>
@@ -718,7 +722,11 @@ return (
           <SelectTrigger className="w-full">
             <SelectValue placeholder="Status" />
           </SelectTrigger>
+<<<<<<< HEAD
+          <SelectContent className='text-accent-foreground'>
+=======
           <SelectContent className="text-accent-foreground">
+>>>>>>> bc621ce1700984a087cb9410181c30956d6a72c8
             <SelectItem value="all">All Statuses</SelectItem>
             <SelectItem value="active">Active</SelectItem>
             <SelectItem value="inactive">Inactive</SelectItem>
