@@ -426,7 +426,7 @@ return (
           if (open) setIsAddDialogOpen(false); 
         }}
       >
-      <DialogContent className="sm:max-w-[600px] text-accent-foreground">
+      <DialogContent className="sm:max-w-[600px] text-accent-foreground overflow-auto ">
         <form onSubmit={handleUpdate} encType="multipart/form-data"> 
           
           {/* Errors Checks */}
@@ -545,7 +545,7 @@ return (
               <ChevronDown className="w-4 h-4 opacity-50" />
             </Button>
           </DropdownMenuTrigger>
-          <DropdownMenuContent className="w-56">
+          <DropdownMenuContent className="w-56 text-accent-foreground">
             <DropdownMenuLabel>Package Types</DropdownMenuLabel>
             <DropdownMenuSeparator />
             {(['individual', 'group', 'family', 'private'] as const).map((option) => (

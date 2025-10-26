@@ -64,14 +64,18 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/staff/dashboard', function () {
         return Inertia::render('Staff/Dashboard');
     })->name('staff.dashboard');
+
+//Tourist pages
+   Route::get('/tourist/trips',  function() {
+         return Inertia::render('Tourist/Trips');
+   })->name('tourist.trips');
+
     
 //Tourist
-  
     Route::get('/tourist/dashboard', [TouristDashboardController::class, 'index'])
         ->name('tourist.dashboard');
     Route::get('/tourist/tours', [TouristDashboardController::class, 'tours'])
         ->name('tourist.tours');
-
     Route::get('/tourist/{destination}/tour', [TouristDashboardController::class, 'tourDetails'])
         ->name('tourist.tourDetails')
         ->where('destination', '[0-9]+');;

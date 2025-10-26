@@ -11,7 +11,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Badge } from "@/components/ui/badge";
 import { motion } from "framer-motion";
 import { Link } from '@inertiajs/react';
-import { Calendar, Clock, Filter, Locate, MapPin, Search, Star, Users } from 'lucide-react';
+import { Calendar, Clock, Clock3, Filter, Locate, MapPin, Search, Star, Users } from 'lucide-react';
 
 const breadcrumbs: BreadcrumbItem[] = [
     {
@@ -211,7 +211,7 @@ const filteredDestinations = destinations.filter((dest) => {
                   <CardContent className="pt-0 ">
                     <div className="w-full grid grid-cols-3 gap-6 mb-4 text-sm text-muted-foreground text-center">
                       <div className="flex items-center">
-                        <MapPin className="w-4 h-4 mr-1" />
+                        <Clock3 className="w-4 h-4 mr-1" />
                          {destination.duration} 
                       </div>
                       <div className="flex items-center">

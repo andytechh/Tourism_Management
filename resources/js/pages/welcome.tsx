@@ -1,9 +1,24 @@
 import { dashboard, login, register } from '@/routes';
 import { type SharedData } from '@/types';
 import { Head, Link, usePage } from '@inertiajs/react';
+import { route } from 'ziggy-js';
 
 export default function Welcome() {
     const { auth } = usePage<SharedData>().props;
+
+    const getDashboard = () => {
+        if(!auth.user) return '/dashboard';
+
+        switch(auth.user.role){
+            case 'admin':
+                return route('admin.dashboard');
+            case 'staff':
+                return route('staff.dashboard');
+            case 'tourist':
+            default:
+                return route('tourist.dashboard');
+        }
+    }
 
     return (
         <>
@@ -19,7 +34,7 @@ export default function Welcome() {
                     <nav className="flex items-center justify-end gap-4">
                         {auth.user ? (
                             <Link
-                                href={dashboard()}
+                                href={getDashboard()}
                                 className="inline-block rounded-sm border border-[#19140035] px-5 py-1.5 text-sm leading-normal text-[#1b1b18] hover:border-[#1915014a] dark:border-[#3E3E3A] dark:text-[#EDEDEC] dark:hover:border-[#62605b]"
                             >
                                 Dashboard
