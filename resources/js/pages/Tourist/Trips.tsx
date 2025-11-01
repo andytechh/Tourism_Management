@@ -9,6 +9,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { BreadcrumbItem } from "@/types";
 import { route } from "ziggy-js";
+import AppLayout from "@/layouts/app-layout";
 
 const breadcrumbs: BreadcrumbItem[] = [
     {
@@ -272,6 +273,7 @@ const Trips = () => {
   );
 
   return (
+   <AppLayout breadcrumbs={breadcrumbs}>
     <div className="min-h-screen flex flex-col">
       
       <main className="flex-1 container mx-auto px-4 py-8">
@@ -343,6 +345,7 @@ const Trips = () => {
         </div>
       </main>
     </div>
+      </AppLayout>
   );
 };
 

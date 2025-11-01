@@ -35,8 +35,9 @@
   import { Textarea } from "@/components/ui/textarea";
   import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
   import { motion } from "framer-motion"
-import { DropdownMenuCheckboxItem, DropdownMenuLabel, DropdownMenuSeparator } from '@radix-ui/react-dropdown-menu';
-import { Checkbox } from '@/components/ui/checkbox';
+  import { DropdownMenuCheckboxItem, DropdownMenuLabel, DropdownMenuSeparator } from '@radix-ui/react-dropdown-menu';
+  import { Checkbox } from '@/components/ui/checkbox';
+  import Swal from "sweetalert2";
 
   const breadcrumbs: BreadcrumbItem[] = [
       {
@@ -187,6 +188,11 @@ import { Checkbox } from '@/components/ui/checkbox';
         onSuccess: () => {
           setIsAddDialogOpen(false);
           resetInertiaForm();
+          Swal.fire({
+          title: "Destination Created successfully!",
+          icon: "success",
+          draggable: true
+    });
         },
         onError: (errors) => {
           console.error('Submission failed:', errors);
@@ -232,6 +238,11 @@ if (!selectedDestination) return;
       setIsAddDialogOpen(false);
       setIsEditDialogOpen(false);
       resetInertiaForm();
+      Swal.fire({
+      title: "Destination updated successfully!",
+      icon: "success",
+      draggable: true
+    });
     },
     onError: (errors) => {
       console.error('Submission failed:', errors);
@@ -239,11 +250,20 @@ if (!selectedDestination) return;
   });
 };
     const handleDelete = (id: number, name: string) => {
-    if(confirm(`Do you want to delete this destination - ${id}, ${name}`)){
-        destroy(route("admin.destinations.destroy", id));
+    Swal.fire({
+    title: "Are you sure?",
+    text: "This action cannot be undone.",
+    icon: "warning",
+    showCancelButton: true,
+    confirmButtonText: "Yes, delete it!",
+    cancelButtonText: "Cancel",
+  }).then((result) => {
+    if (result.isConfirmed) {
+      destroy(route("admin.destinations.destroy", id));
+      Swal.fire("Deleted!", "The record has been deleted.", "success");
     }
-
-    }
+  }) 
+}
 return (
       <AppLayout breadcrumbs={breadcrumbs}>
   <div className="p-6 space-y-6">
@@ -466,11 +486,7 @@ return (
           <SelectTrigger>
             <SelectValue placeholder="Select category" />
           </SelectTrigger>
-<<<<<<< HEAD
           <SelectContent >
-=======
-          <SelectContent className="text-accent-foreground">
->>>>>>> bc621ce1700984a087cb9410181c30956d6a72c8
             <SelectItem value="marine">Marine Adventure</SelectItem>
             <SelectItem value="nature">Nature Experience</SelectItem>
             <SelectItem value="cultural">Cultural Tour</SelectItem>
@@ -722,11 +738,7 @@ return (
           <SelectTrigger className="w-full">
             <SelectValue placeholder="Status" />
           </SelectTrigger>
-<<<<<<< HEAD
           <SelectContent className='text-accent-foreground'>
-=======
-          <SelectContent className="text-accent-foreground">
->>>>>>> bc621ce1700984a087cb9410181c30956d6a72c8
             <SelectItem value="all">All Statuses</SelectItem>
             <SelectItem value="active">Active</SelectItem>
             <SelectItem value="inactive">Inactive</SelectItem>

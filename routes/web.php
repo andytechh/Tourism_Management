@@ -3,6 +3,7 @@
 use App\Http\Controllers\DestinationsController;
 use App\Http\Controllers\Tourist\TouristDashboardController;
 use App\Http\Controllers\BookingController;
+use App\Http\Controllers\DashboardController;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 
@@ -50,6 +51,9 @@ Route::middleware(['auth', 'verified'])->group(function () {
         ->name('admin.destinations.update');
     Route::delete('/admin/destinations/{destination}', [DestinationsController::class, 'destroy'])
         ->name('admin.destinations.destroy');
+
+     Route::get('/admin/dashboard', [DashboardController::class, 'index']) ->name('admin.dashboard');
+        
 
 //Admin Bookings
     Route::get('/admin/bookings', [BookingController::class, 'index'])
