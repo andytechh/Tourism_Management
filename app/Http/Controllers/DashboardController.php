@@ -24,14 +24,12 @@ class DashboardController extends Controller
         $confirmedBookings = Booking::where('status', 'confirmed')->count();
         $cancelledBookings = Booking::where('status', 'cancelled')->count();
 
-        $bookingsAll = $confirmedBookings + $pendingBookings + $cancelledBookings;
 
         // Revenue (sum of confirmed bookings only)
         $totalRevenue = Booking::where('status', 'confirmed')->sum('total_price');
 
         // Prepare all stats for Inertia
         $stats = [
-            'bookingsAll' => $bookingsAll,
             'touristCount' => $touristCount,
             'destinationCount' => $destinationCount,
             'totalBookings' => $totalBookings,
@@ -52,7 +50,7 @@ class DashboardController extends Controller
             ->orderBy(DB::raw('MONTH(created_at)'))
             ->get();
 
-       $tourTypes = DB::table('bookings')
+        $tourTypes = DB::table('bookings')
             ->join('destinations', 'bookings.destination_id', '=', 'destinations.id')
             ->select('destinations.category', DB::raw('COUNT(bookings.id) as value'))
             ->groupBy('destinations.category')

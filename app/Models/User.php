@@ -22,7 +22,21 @@ class User extends Authenticatable
         'name',
         'email',
         'password',
+        'roles',
+        'status',
+        'last_login_at',
     ];
+     protected $casts = [
+        'last_login_at' => 'datetime',
+    ];
+
+    // Relationship to tourist
+
+    // Relationship to bookings (through tourist)
+    public function bookings()
+{
+    return $this->hasMany(Booking::class, 'tourist_id');
+}
 
     /**
      * The attributes that should be hidden for serialization.

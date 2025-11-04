@@ -46,6 +46,7 @@ class LoginRequest extends FormRequest
 
         if (! $user || ! Auth::getProvider()->validateCredentials($user, $this->only('password'))) {
             RateLimiter::hit($this->throttleKey());
+            $user->update(['last_login_at' => now()]);
 
             throw ValidationException::withMessages([
                 'email' => __('auth.failed'),

@@ -4,6 +4,7 @@ use App\Http\Controllers\DestinationsController;
 use App\Http\Controllers\Tourist\TouristDashboardController;
 use App\Http\Controllers\BookingController;
 use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\UsersManagmentController;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 
@@ -51,8 +52,22 @@ Route::middleware(['auth', 'verified'])->group(function () {
         ->name('admin.destinations.update');
     Route::delete('/admin/destinations/{destination}', [DestinationsController::class, 'destroy'])
         ->name('admin.destinations.destroy');
+    //
+    Route::get('/admin/dashboard', [DashboardController::class, 'index']) ->name('admin.dashboard');
+    // User Management
+    Route::get('/admin/users', [UsersManagmentController::class, 'index']) ->name('admin.users');
 
-     Route::get('/admin/dashboard', [DashboardController::class, 'index']) ->name('admin.dashboard');
+    Route::delete('/admin/users/{user}', [UsersManagmentController::class, 'destroy'])
+        ->name('admin.users.destroy');
+    Route::put('/admin/users/{user}/toggle-status', [UsersManagmentController::class, 'toggleStatus'])
+    ->name('admin.users.toggle-status');
+    Route::put('/admin/users/{user}/reset-password', [UsersManagmentController::class, 'resetPassword'])
+    ->name('admin.users.reset-password');
+
+
+    
+    
+
         
 
 //Admin Bookings

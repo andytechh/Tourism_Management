@@ -156,7 +156,7 @@
       return num.toString();
     };
 
-    const formatRating = (rating: number): string => {
+  const formatRating = (rating: number): string => {
       return rating.toFixed(1);
     };
 
@@ -181,7 +181,7 @@
     return matchesSearch && matchesCategory && matchesStatus;
   });
 
-    const handleSumbit = (e: React.FormEvent) => {
+  const handleSumbit = (e: React.FormEvent) => {
       e.preventDefault();
       post(route('admin.destinations.store'), {
         preserveScroll: true,

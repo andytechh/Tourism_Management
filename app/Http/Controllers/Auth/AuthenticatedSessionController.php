@@ -32,6 +32,12 @@ class AuthenticatedSessionController extends Controller
 {
     $user = $request->validateCredentials();
 
+    if($user->status === 'suspended'){
+        return redirect()->back()
+            ->withErrors(['email' => 'Your account is suspended. Please contact support.'])
+            ->withInput($request->only('email', 'remember'));
+    }
+
     if (Features::enabled(Features::twoFactorAuthentication()) && $user->hasEnabledTwoFactorAuthentication()) {
         $request->session()->put([
             'login.id' => $user->getKey(),
@@ -43,6 +49,8 @@ class AuthenticatedSessionController extends Controller
 
     Auth::login($user, $request->boolean('remember'));
     $request->session()->regenerate();
+
+    $user->update(['last_login_at' => now()]);
 
     //  Role-based redirect logic
     switch ($user->role) {

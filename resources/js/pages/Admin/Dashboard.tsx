@@ -43,7 +43,7 @@ import {
 import { vi } from 'date-fns/locale';
 const breadcrumbs: BreadcrumbItem[] = [
     {
-        title: 'Admin-Dashboard',
+        title: '',
         href: route('admin.dashboard'), 
     },
 ];
@@ -98,44 +98,6 @@ const visitorsData = monthlyVisitors.map((item) => ({
   color: t.color || '#3B82F6', 
 }));
 
-console.log("Stats:", stats);
-console.log("Monthly Visitors:", monthlyVisitors);
-console.log("Tour Types:", tourTypes);
-
-  // const stats = [
-  //   {
-  //     title: "Total Tourists",
-  //     value: "15,847",
-  //     change: "+12.5%",
-  //     icon: Users,
-  //     color: "text-primary",
-  //     bgColor: "bg-primary/10"
-  //   },
-  //   {
-  //     title: "Active Bookings",
-  //     value: "892",
-  //     change: "+8.2%",
-  //     icon: Calendar,
-  //     color: "text-secondary",
-  //     bgColor: "bg-secondary/10"
-  //   },
-  //   {
-  //     title: "Registered Businesses",
-  //     value: "156",
-  //     change: "+15.3%",
-  //     icon: Building2,
-  //     color: "text-coral",
-  //     bgColor: "bg-coral/10"
-  //   },
-  //   {
-  //     title: "Monthly Revenue",
-  //     value: "₱2.5M",
-  //     change: "+18.7%",
-  //     icon: DollarSign,
-  //     color: "text-primary-dark",
-  //     bgColor: "bg-primary-dark/10"
-  //   }
-  // ];
 
     return (
   <AppLayout breadcrumbs={breadcrumbs}>
@@ -150,13 +112,6 @@ console.log("Tour Types:", tourTypes);
       </div>
 
       <div className="flex items-center space-x-4">
-        <div className="relative">
-          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-          <Input
-            placeholder="Search..."
-            className="pl-10 w-80"
-          />
-        </div>
         <Button variant="ghost" size="icon" className="relative">
           <Bell className="w-5 h-5" />
           <span className="absolute -top-1 -right-1 w-3 h-3 bg-coral rounded-full" />
