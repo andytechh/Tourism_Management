@@ -2,7 +2,10 @@
 
 use App\Models\User;
 use Illuminate\Support\Facades\RateLimiter;
+use Illuminate\Foundation\Testing\RefreshDatabase;
 use Laravel\Fortify\Features;
+
+uses(RefreshDatabase::class);
 
 test('login screen can be rendered', function () {
     $response = $this->get(route('login'));
@@ -63,7 +66,7 @@ test('users can not authenticate with invalid password', function () {
 
 test('users can logout', function () {
     $user = User::factory()->create();
-
+    
     $response = $this->actingAs($user)->post(route('logout'));
 
     $this->assertGuest();

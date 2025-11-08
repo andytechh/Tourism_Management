@@ -4,6 +4,7 @@ use App\Http\Controllers\DestinationsController;
 use App\Http\Controllers\Tourist\TouristDashboardController;
 use App\Http\Controllers\BookingController;
 use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\Tourist\TripsController;
 use App\Http\Controllers\UsersManagmentController;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
@@ -54,7 +55,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
         ->name('admin.destinations.destroy');
     //
     Route::get('/admin/dashboard', [DashboardController::class, 'index']) ->name('admin.dashboard');
-    // User Management
+// User Management
     Route::get('/admin/users', [UsersManagmentController::class, 'index']) ->name('admin.users');
 
     Route::delete('/admin/users/{user}', [UsersManagmentController::class, 'destroy'])
@@ -64,11 +65,6 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::put('/admin/users/{user}/reset-password', [UsersManagmentController::class, 'resetPassword'])
     ->name('admin.users.reset-password');
 
-
-    
-    
-
-        
 
 //Admin Bookings
     Route::get('/admin/bookings', [BookingController::class, 'index'])
@@ -88,6 +84,12 @@ Route::middleware(['auth', 'verified'])->group(function () {
    Route::get('/tourist/trips',  function() {
          return Inertia::render('Tourist/Trips');
    })->name('tourist.trips');
+    Route::get('/tourist/trips', [TripsController::class, 'index'])
+        ->name('tourist.trips');
+    Route::post('/tourist/bookings/{booking}/rate', [TripsController::class, 'rateBooking'])
+    ->name('tourist.bookings.rate');
+
+
 
     
 //Tourist

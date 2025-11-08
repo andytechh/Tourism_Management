@@ -27,6 +27,8 @@ class Booking extends Model
         'special_requests',
         'payment_method', 
         'booking_type',
+        'rating',
+        'feedback',
     ];
 
     public function user()

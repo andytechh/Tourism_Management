@@ -94,7 +94,7 @@
     }} = usePage().props as BookingsProps;
 
   const getStatusColor = (status: string) => {
-    switch (status.toLowerCase()) {
+    switch (status.toLowerCase()) { 
       case "confirmed": return "default";
       case "pending": return "secondary";
       case "cancelled": return "destructive";

@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { type BreadcrumbItem } from '@/types';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -7,9 +8,9 @@ import { Star, MapPin, Calendar, Clock, User } from "lucide-react";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
-import { BreadcrumbItem } from "@/types";
 import { route } from "ziggy-js";
 import AppLayout from "@/layouts/app-layout";
+import { useForm, usePage } from "@inertiajs/react";
 
 const breadcrumbs: BreadcrumbItem[] = [
     {
@@ -18,252 +19,268 @@ const breadcrumbs: BreadcrumbItem[] = [
     },
 ];
 
-
 interface Booking {
-  id: string;
-  destination: string;
-  location: string;
-  image: string;
-  date: string;
-  time: string;
-  guests: number;
-  status: "completed" | "upcoming" | "cancelled";
-  price: number;
-  confirmationCode: string;
-  userRating?: number;
-  userReview?: string;
+  id:number;
+  guests:number;
+  booking_time:number;
+  booking_date:number;
+  status:string;
+  image:string;
+  name:string;
+  destination:string;
+  location:string;
+  total_price:number;
+  rating?: number;
+  feedback?: string;
+
+}
+interface TripsProps{
+  flash:{
+    message?:string
+  },
+  bookings:Booking[];
 }
 
-const Trips = () => {
-  const [bookings] = useState<Booking[]>([
-    {
-      id: "1",
-      destination: "Whale Shark Interaction",
-      location: "Donsol, Sorsogon",
-      image: "/placeholder.svg",
-      date: "2024-01-15",
-      time: "06:00 AM",
-      guests: 2,
-      status: "completed",
-      price: 3500,
-      confirmationCode: "WS-2024-001",
-      userRating: 5,
-      userReview: "Amazing experience! The whale sharks were incredible."
-    },
-    {
-      id: "2",
-      destination: "Firefly Watching Tour",
-      location: "Donsol River",
-      image: "/placeholder.svg",
-      date: "2024-02-20",
-      time: "07:00 PM",
-      guests: 4,
-      status: "completed",
-      price: 1200,
-      confirmationCode: "FF-2024-002",
-    },
-    {
-      id: "3",
-      destination: "Island Hopping Adventure",
-      location: "Nearby Islands",
-      image: "/placeholder.svg",
-      date: "2024-12-25",
-      time: "08:00 AM",
-      guests: 3,
-      status: "upcoming",
-      price: 2500,
-      confirmationCode: "IH-2024-003",
-    },
-    {
-      id: "4",
-      destination: "Snorkeling Experience",
-      location: "Coral Reef Area",
-      image: "/placeholder.svg",
-      date: "2024-01-10",
-      time: "09:00 AM",
-      guests: 2,
-      status: "cancelled",
-      price: 1800,
-      confirmationCode: "SN-2024-004",
-    },
-  ]);
-
+export default function Trips(){
   const [selectedBooking, setSelectedBooking] = useState<Booking | null>(null);
   const [rating, setRating] = useState(0);
-  const [review, setReview] = useState("");
+  const [feedback, setFeedback] = useState("");
   const [isDialogOpen, setIsDialogOpen] = useState(false);
 
-  const handleRatingSubmit = () => {
-    console.log("Rating submitted:", { bookingId: selectedBooking?.id, rating, review });
-    setIsDialogOpen(false);
-    setRating(0);
-    setReview("");
-  };
+  const {data, setData, post, processing, errors, reset} = useForm({
+    rating:0,
+    feedback:'',
+  });
 
-  const getStatusColor = (status: string) => {
+  const handleRatingSubmit = () => {
+    if (!selectedBooking) return;
+
+    setData('rating', rating);
+    setData('feedback', feedback);
+
+    post(route('tourist.bookings.rate', selectedBooking.id), {
+  preserveScroll: true,
+  onSuccess: () => {
+    setIsDialogOpen(false);
+    reset();
+    setRating(0);
+    setFeedback('');
+    setSelectedBooking(null);
+  },
+  onFinish: () => {
+    window.location.reload();
+  },
+});
+
+  };
+  const {bookings = [], flash} = usePage().props as TripsProps;
+
+ console.log(bookings);
+ console.log(flash);
+   const getStatusVariant = (status: string): "default" | "secondary" | "destructive" | "outline" => {
     switch (status) {
-      case "completed":
-        return "bg-green-500/10 text-green-500 border-green-500/20";
-      case "upcoming":
-        return "bg-blue-500/10 text-blue-500 border-blue-500/20";
+      case "confirmed":
+        return "secondary";
+      case "pending":
+        return "default";
       case "cancelled":
-        return "bg-red-500/10 text-red-500 border-red-500/20";
+        return "destructive";
       default:
-        return "bg-muted text-muted-foreground";
+        return "outline";
     }
   };
 
-  const completedBookings = bookings.filter(b => b.status === "completed");
-  const upcomingBookings = bookings.filter(b => b.status === "upcoming");
+  const completedBookings = bookings.filter(b => b.status === "confirmed");
+  const upcomingBookings = bookings.filter(b => b.status === "pending");
   const cancelledBookings = bookings.filter(b => b.status === "cancelled");
 
-  const renderBookingCard = (booking: Booking) => (
-    <Card key={booking.id} className="overflow-hidden hover:shadow-lg transition-shadow">
+ const renderBookingCard = (booking: Booking) => (
+    <Card key={booking.id} className="overflow-hidden hover:shadow-large transition-all duration-300 hover:-translate-y-1 border-2 group">
       <div className="grid md:grid-cols-3 gap-0">
-        <div className="relative h-48 md:h-full">
+        <div className="relative h-35 md:h-full overflow-hidden">
           <img
             src={booking.image}
             alt={booking.destination}
-            className="absolute inset-0 w-full h-full object-cover"
+            className="absolute inset-0 w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
           />
-          <Badge className={`absolute top-4 right-4 ${getStatusColor(booking.status)}`}>
-            {booking.status}
+          <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent" />
+          <Badge variant={getStatusVariant(booking.status)} className="absolute top-4 right-4 shadow-md backdrop-blur-sm text-sm font-bold">
+            {booking.status.toUpperCase()}
           </Badge>
         </div>
         
-        <CardContent className="md:col-span-2 p-6">
-          <div className="space-y-4">
-            <div>
-              <h3 className="text-xl font-semibold mb-2">{booking.destination}</h3>
-              <div className="flex items-center gap-2 text-muted-foreground text-sm">
-                <MapPin className="w-4 h-4" />
-                <span>{booking.location}</span>
+        <CardContent className="md:col-span-2 p-8">
+          <div className="space-y-6">
+            <div className="space-y-3">
+              <h3 className="text-2xl font-bold bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">
+                {booking.destination}
+              </h3>
+              <div className="flex items-center gap-2 text-muted-foreground">
+                <MapPin className="w-5 h-5 text-primary" />
+                <span className="text-base">{booking.location}</span>
               </div>
             </div>
 
-            <div className="grid grid-cols-2 gap-4 text-sm">
-              <div className="flex items-center gap-2">
-                <Calendar className="w-4 h-4 text-muted-foreground" />
-                <span>{new Date(booking.date).toLocaleDateString()}</span>
+            <div className="grid grid-cols-2 gap-6">
+              <div className="flex items-center gap-3 p-3 rounded-lg bg-muted/50 hover:bg-muted transition-colors">
+                <div className="p-2 rounded-full bg-primary/10">
+                  <Calendar className="w-5 h-5 text-primary" />
+                </div>
+                <div>
+                  <p className="text-xs text-muted-foreground">Date</p>
+                  <p className="font-semibold">{new Date(booking.booking_date).toLocaleDateString()}</p>
+                </div>
               </div>
-              <div className="flex items-center gap-2">
-                <Clock className="w-4 h-4 text-muted-foreground" />
-                <span>{booking.time}</span>
+              <div className="flex items-center gap-3 p-3 rounded-lg bg-muted/50 hover:bg-muted transition-colors">
+                <div className="p-2 rounded-full bg-secondary/10">
+                  <Clock className="w-5 h-5 text-secondary" />
+                </div>
+                <div>
+                  <p className="text-xs text-muted-foreground">Time</p>
+                  <p className="font-semibold">{booking.booking_time}</p>
+                </div>
               </div>
-              <div className="flex items-center gap-2">
-                <User className="w-4 h-4 text-muted-foreground" />
-                <span>{booking.guests} {booking.guests === 1 ? 'Guest' : 'Guests'}</span>
+              <div className="flex items-center gap-3 p-3 rounded-lg bg-muted/50 hover:bg-muted transition-colors">
+                <div className="p-2 rounded-full bg-coral/10">
+                  <User className="w-5 h-5 text-coral" />
+                </div>
+                <div>
+                  <p className="text-xs text-muted-foreground">Guests</p>
+                  <p className="font-semibold">{booking.guests} {booking.guests === 1 ? 'Guest' : 'Guests'}</p>
+                </div>
               </div>
-              <div className="font-semibold">
-                ₱{booking.price.toLocaleString()}
+              <div className="flex items-center gap-3 p-3 rounded-lg bg-gradient-to-br from-primary/10 to-secondary/10 hover:from-primary/20 hover:to-secondary/20 transition-all">
+                <div className="p-2 rounded-full bg-white/50 backdrop-blur-sm">
+                  <span className="text-xl font-bold text-primary">₱</span>
+                </div>
+                <div>
+                  <p className="text-xs text-muted-foreground">Total Price</p>
+                  <p className="text-xl font-bold text-primary">{booking.total_price.toLocaleString()}</p>
+                </div>
               </div>
             </div>
 
-            <div className="flex items-center justify-between pt-4 border-t">
-              <div className="text-sm text-muted-foreground">
-                Confirmation: <span className="font-mono font-medium">{booking.confirmationCode}</span>
+            <div className="flex items-center justify-between pt-6 border-t-2 border-dashed">
+              <div className="px-4 py-2 rounded-lg bg-accent/30">
+                <p className="text-xs text-muted-foreground mb-1">Confirmation Code</p>
+                <p className="font-mono font-bold text-primary text-sm">{booking.name}</p>
               </div>
               
-              {booking.status === "completed" && (
+              {booking.status === "confirmed" && (
                 <div>
-                  {booking.userRating ? (
-                    <div className="flex items-center gap-2">
-                      <div className="flex">
-                        {[1, 2, 3, 4, 5].map((star) => (
-                          <Star
-                            key={star}
-                            className={`w-4 h-4 ${
-                              star <= booking.userRating!
-                                ? "fill-yellow-400 text-yellow-400"
-                                : "text-muted-foreground"
-                            }`}
-                          />
-                        ))}
+                  {/* Always render the Dialog, but conditionally show stars + edit OR just the rate button */}
+                  <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+                    {booking.rating ? (
+                      <div className="flex items-center gap-2">
+                        <div className="flex">
+                          {[1, 2, 3, 4, 5].map((star) => (
+                            <Star
+                              key={star}
+                              className={`w-4 h-4 ${
+                                star <= booking.rating!
+                                  ? "fill-yellow-400 text-yellow-400"
+                                  : "text-muted-foreground"
+                              }`}
+                            />
+                          ))}
+                        </div>
+                        <DialogTrigger asChild>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => {
+                              setSelectedBooking(booking);
+                              setRating(booking.rating || 0);
+                              setFeedback(booking.feedback || "");
+                              // Dialog will open via DialogTrigger
+                            }}
+                          >
+                            Edit Rating
+                          </Button>
+                        </DialogTrigger>
                       </div>
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => {
-                          setSelectedBooking(booking);
-                          setRating(booking.userRating || 0);
-                          setReview(booking.userReview || "");
-                          setIsDialogOpen(true);
-                        }}
-                      >
-                        Edit Rating
-                      </Button>
-                    </div>
-                  ) : (
-                    <Dialog open={isDialogOpen && selectedBooking?.id === booking.id} onOpenChange={(open) => {
-                      setIsDialogOpen(open);
-                      if (open) setSelectedBooking(booking);
-                    }}>
+                    ) : (
                       <DialogTrigger asChild>
-                        <Button variant="outline" size="sm">
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => {
+                            setSelectedBooking(booking);
+                            setRating(0);
+                            setFeedback("");
+                            // Dialog will open via DialogTrigger
+                          }}
+                        >
                           Rate Experience
                         </Button>
                       </DialogTrigger>
-                      <DialogContent className="sm:max-w-[500px]">
-                        <DialogHeader>
-                          <DialogTitle>Rate Your Experience</DialogTitle>
-                          <DialogDescription>
-                            How was your {booking.destination} experience?
-                          </DialogDescription>
-                        </DialogHeader>
-                        
-                        <div className="space-y-6 py-4">
-                          <div className="space-y-2">
-                            <Label>Your Rating</Label>
-                            <div className="flex gap-2">
-                              {[1, 2, 3, 4, 5].map((star) => (
-                                <button
-                                  key={star}
-                                  type="button"
-                                  onClick={() => setRating(star)}
-                                  className="transition-transform hover:scale-110"
-                                >
-                                  <Star
-                                    className={`w-8 h-8 ${
-                                      star <= rating
-                                        ? "fill-yellow-400 text-yellow-400"
-                                        : "text-muted-foreground"
-                                    }`}
-                                  />
-                                </button>
-                              ))}
-                            </div>
-                          </div>
+                    )}
 
-                          <div className="space-y-2">
-                            <Label htmlFor="review">Your Review (Optional)</Label>
-                            <Textarea
-                              id="review"
-                              placeholder="Share your experience with others..."
-                              value={review}
-                              onChange={(e) => setReview(e.target.value)}
-                              rows={4}
-                            />
+                    {/* Dialog Content — same for both new and edit */}
+                    <DialogContent className="sm:max-w-[500px]">
+                      <DialogHeader>
+                        <DialogTitle>
+                          {booking.rating ? "Edit Your Rating" : "Rate Your Experience"}
+                        </DialogTitle>
+                        <DialogDescription>
+                          How was your {booking.destination} experience?
+                        </DialogDescription>
+                      </DialogHeader>
+
+                      <div className="space-y-6 py-4">
+                        <div className="space-y-2">
+                          <Label>Your Rating</Label>
+                          <div className="flex gap-2">
+                            {[1, 2, 3, 4, 5].map((star) => (
+                              <button
+                                key={star}
+                                type="button"
+                                onClick={() => setRating(star)}
+                                className="transition-transform hover:scale-110"
+                              >
+                                <Star
+                                  className={`w-8 h-8 ${
+                                    star <= rating
+                                      ? "fill-yellow-400 text-yellow-400"
+                                      : "text-muted-foreground"
+                                  }`}
+                                />
+                              </button>
+                            ))}
                           </div>
                         </div>
 
-                        <DialogFooter>
-                          <Button variant="outline" onClick={() => setIsDialogOpen(false)}>
-                            Cancel
-                          </Button>
-                          <Button onClick={handleRatingSubmit} disabled={rating === 0}>
-                            Submit Rating
-                          </Button>
-                        </DialogFooter>
-                      </DialogContent>
-                    </Dialog>
-                  )}
+                        <div className="space-y-2">
+                          <Label htmlFor="review">Your Review (Optional)</Label>
+                          <Textarea
+                            id="review"
+                            placeholder="Share your experience with others..."
+                            value={feedback}
+                            onChange={(e) => setFeedback(e.target.value)}
+                            rows={4}
+                          />
+                        </div>
+                      </div>
+
+                      <DialogFooter>
+                        <Button variant="outline" onClick={() => setIsDialogOpen(false)}>
+                          Cancel
+                        </Button>
+                        <Button onClick={handleRatingSubmit} disabled={rating === 0}>
+                          {booking.rating ? "Update Rating" : "Submit Rating"}
+                        </Button>
+                      </DialogFooter>
+                    </DialogContent>
+                  </Dialog>
                 </div>
               )}
             </div>
 
-            {booking.userReview && (
-              <div className="pt-4 border-t">
-                <p className="text-sm text-muted-foreground italic">"{booking.userReview}"</p>
+            {booking.feedback && (
+              <div className="pt-6 mt-6 border-t-2 border-dashed">
+                <div className="p-4 rounded-lg bg-gradient-to-br from-accent/20 to-accent/10 border-l-4 border-primary">
+                  <p className="text-muted-foreground italic">"{booking.feedback}"</p>
+                </div>
               </div>
             )}
           </div>
@@ -283,27 +300,27 @@ const Trips = () => {
             <p className="text-muted-foreground">View and manage your tour bookings</p>
           </div>
 
-          <Tabs defaultValue="all" className="w-full">
+          <Tabs defaultValue="all" className="w-full ">
             <TabsList className="grid w-full max-w-md grid-cols-4">
               <TabsTrigger value="all">
                 All ({bookings.length})
               </TabsTrigger>
-              <TabsTrigger value="upcoming">
-                Upcoming ({upcomingBookings.length})
+              <TabsTrigger value="pending">
+                Pending ({upcomingBookings.length})
               </TabsTrigger>
-              <TabsTrigger value="completed">
-                Completed ({completedBookings.length})
+              <TabsTrigger value="confirmed">
+                Confirmed ({completedBookings.length})
               </TabsTrigger>
               <TabsTrigger value="cancelled">
                 Cancelled ({cancelledBookings.length})
               </TabsTrigger>
             </TabsList>
 
-            <TabsContent value="all" className="space-y-4 mt-6">
+            <TabsContent value="all" className="space-y-4 mt-6 h-30">
               {bookings.map(renderBookingCard)}
             </TabsContent>
 
-            <TabsContent value="upcoming" className="space-y-4 mt-6">
+            <TabsContent value="pending" className="space-y-4 mt-6 h-30">
               {upcomingBookings.length > 0 ? (
                 upcomingBookings.map(renderBookingCard)
               ) : (
@@ -316,7 +333,7 @@ const Trips = () => {
               )}
             </TabsContent>
 
-            <TabsContent value="completed" className="space-y-4 mt-6">
+            <TabsContent value="confirmed" className="space-y-4 mt-6 ">
               {completedBookings.length > 0 ? (
                 completedBookings.map(renderBookingCard)
               ) : (
@@ -329,7 +346,7 @@ const Trips = () => {
               )}
             </TabsContent>
 
-            <TabsContent value="cancelled" className="space-y-4 mt-6">
+            <TabsContent value="cancelled" className="space-y-4 mt-6 h-30">
               {cancelledBookings.length > 0 ? (
                 cancelledBookings.map(renderBookingCard)
               ) : (
@@ -349,4 +366,3 @@ const Trips = () => {
   );
 };
 
-export default Trips;
