@@ -51,7 +51,7 @@
     category: string;
     location: string;
     price: number;
-    rating: number;
+    rating_count: number;
     bookings_count: number;
     description: string;
     duration: string;
@@ -792,7 +792,7 @@ return (
             <TableCell>
               <div className="flex items-center gap-1">
                 <Star className="w-4 h-4 fill-amber-400 text-amber-400" />
-                {destination.rating}
+                {destination.rating_count}
               </div>
             </TableCell>
             <TableCell>{destination.bookings_count}</TableCell>

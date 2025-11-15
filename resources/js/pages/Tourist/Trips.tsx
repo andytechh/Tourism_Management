@@ -5,7 +5,6 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Star, MapPin, Calendar, Clock, User } from "lucide-react";
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { route } from "ziggy-js";
@@ -13,80 +12,63 @@ import AppLayout from "@/layouts/app-layout";
 import { useForm, usePage } from "@inertiajs/react";
 
 const breadcrumbs: BreadcrumbItem[] = [
-    {
-        title: 'Tourist-Trips',
-        href: route('tourist.trips'),
-    },
+  {
+    title: 'Tourist-Trips',
+    href: route('tourist.trips'),
+  },
 ];
 
 interface Booking {
-  id:number;
-  guests:number;
-  booking_time:number;
-  booking_date:number;
-  status:string;
-  image:string;
-  name:string;
-  destination:string;
-  location:string;
-  total_price:number;
+  id: number;
+  guests: number;
+  booking_time: string;
+  booking_date: string;
+  status: string;
+  image: string;
+  name: string;
+  destination: string;
+  location: string;
+  total_price: number;
   rating?: number;
   feedback?: string;
-
-}
-interface TripsProps{
-  flash:{
-    message?:string
-  },
-  bookings:Booking[];
 }
 
-export default function Trips(){
+interface TripsProps {
+  flash: {
+    message?: string;
+  };
+  bookings: Booking[];
+}
+
+export default function Trips() {
   const [selectedBooking, setSelectedBooking] = useState<Booking | null>(null);
-  const [rating, setRating] = useState(0);
-  const [feedback, setFeedback] = useState("");
-  const [isDialogOpen, setIsDialogOpen] = useState(false);
 
-  const {data, setData, post, processing, errors, reset} = useForm({
-    rating:0,
-    feedback:'',
+  const { data, setData, post, processing, reset } = useForm({
+    rating: 0,
+    feedback: '',
   });
 
   const handleRatingSubmit = () => {
     if (!selectedBooking) return;
 
-    setData('rating', rating);
-    setData('feedback', feedback);
-
     post(route('tourist.bookings.rate', selectedBooking.id), {
-  preserveScroll: true,
-  onSuccess: () => {
-    setIsDialogOpen(false);
-    reset();
-    setRating(0);
-    setFeedback('');
-    setSelectedBooking(null);
-  },
-  onFinish: () => {
-    window.location.reload();
-  },
-});
-
+      preserveScroll: true,
+      preserveState: true,
+      onSuccess: () => {
+        setSelectedBooking(null);
+        reset();
+      },
+    });
   };
-  const {bookings = [], flash} = usePage().props as TripsProps;
 
- console.log(bookings);
- console.log(flash);
-   const getStatusVariant = (status: string): "default" | "secondary" | "destructive" | "outline" => {
+  const { bookings = [], flash } = usePage().props as TripsProps;
+
+  const getStatusVariant = (status: string): "default" | "secondary" | "destructive" | "outline" => {
     switch (status) {
-      case "confirmed":
-        return "secondary";
-      case "pending":
-        return "default";
-      case "cancelled":
-        return "destructive";
-      default:
-        return "outline";
+      case "confirmed": return "secondary";
+      case "pending": return "default";
+      case "cancelled": return "destructive";
+      default: return "outline";
     }
   };
 
@@ -94,7 +76,7 @@ export default function Trips(){
   const upcomingBookings = bookings.filter(b => b.status === "pending");
   const cancelledBookings = bookings.filter(b => b.status === "cancelled");
 
- const renderBookingCard = (booking: Booking) => (
+  const renderBookingCard = (booking: Booking) => (
     <Card key={booking.id} className="overflow-hidden hover:shadow-large transition-all duration-300 hover:-translate-y-1 border-2 group">
       <div className="grid md:grid-cols-3 gap-0">
         <div className="relative h-35 md:h-full overflow-hidden">
@@ -108,7 +90,7 @@ export default function Trips(){
             {booking.status.toUpperCase()}
           </Badge>
         </div>
-        
+
         <CardContent className="md:col-span-2 p-8">
           <div className="space-y-6">
             <div className="space-y-3">
@@ -165,113 +147,48 @@ export default function Trips(){
                 <p className="text-xs text-muted-foreground mb-1">Confirmation Code</p>
                 <p className="font-mono font-bold text-primary text-sm">{booking.name}</p>
               </div>
-              
+
               {booking.status === "confirmed" && (
                 <div>
-                  {/* Always render the Dialog, but conditionally show stars + edit OR just the rate button */}
-                  <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-                    {booking.rating ? (
-                      <div className="flex items-center gap-2">
-                        <div className="flex">
-                          {[1, 2, 3, 4, 5].map((star) => (
-                            <Star
-                              key={star}
-                              className={`w-4 h-4 ${
-                                star <= booking.rating!
-                                  ? "fill-yellow-400 text-yellow-400"
-                                  : "text-muted-foreground"
-                              }`}
-                            />
-                          ))}
-                        </div>
-                        <DialogTrigger asChild>
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={() => {
-                              setSelectedBooking(booking);
-                              setRating(booking.rating || 0);
-                              setFeedback(booking.feedback || "");
-                              // Dialog will open via DialogTrigger
-                            }}
-                          >
-                            Edit Rating
-                          </Button>
-                        </DialogTrigger>
-                      </div>
-                    ) : (
-                      <DialogTrigger asChild>
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() => {
-                            setSelectedBooking(booking);
-                            setRating(0);
-                            setFeedback("");
-                            // Dialog will open via DialogTrigger
-                          }}
-                        >
-                          Rate Experience
-                        </Button>
-                      </DialogTrigger>
-                    )}
-
-                    {/* Dialog Content — same for both new and edit */}
-                    <DialogContent className="sm:max-w-[500px]">
-                      <DialogHeader>
-                        <DialogTitle>
-                          {booking.rating ? "Edit Your Rating" : "Rate Your Experience"}
-                        </DialogTitle>
-                        <DialogDescription>
-                          How was your {booking.destination} experience?
-                        </DialogDescription>
-                      </DialogHeader>
-
-                      <div className="space-y-6 py-4">
-                        <div className="space-y-2">
-                          <Label>Your Rating</Label>
-                          <div className="flex gap-2">
-                            {[1, 2, 3, 4, 5].map((star) => (
-                              <button
-                                key={star}
-                                type="button"
-                                onClick={() => setRating(star)}
-                                className="transition-transform hover:scale-110"
-                              >
-                                <Star
-                                  className={`w-8 h-8 ${
-                                    star <= rating
-                                      ? "fill-yellow-400 text-yellow-400"
-                                      : "text-muted-foreground"
-                                  }`}
-                                />
-                              </button>
-                            ))}
-                          </div>
-                        </div>
-
-                        <div className="space-y-2">
-                          <Label htmlFor="review">Your Review (Optional)</Label>
-                          <Textarea
-                            id="review"
-                            placeholder="Share your experience with others..."
-                            value={feedback}
-                            onChange={(e) => setFeedback(e.target.value)}
-                            rows={4}
+                  {booking.rating ? (
+                    <div className="flex items-center gap-2">
+                      <div className="flex">
+                        {[1, 2, 3, 4, 5].map((star) => (
+                          <Star
+                            key={star}
+                            className={`w-4 h-4 ${
+                              star <= booking.rating!
+                                ? "fill-yellow-400 text-yellow-400"
+                                : "text-muted-foreground"
+                            }`}
                           />
-                        </div>
+                        ))}
                       </div>
-
-                      <DialogFooter>
-                        <Button variant="outline" onClick={() => setIsDialogOpen(false)}>
-                          Cancel
-                        </Button>
-                        <Button onClick={handleRatingSubmit} disabled={rating === 0}>
-                          {booking.rating ? "Update Rating" : "Submit Rating"}
-                        </Button>
-                      </DialogFooter>
-                    </DialogContent>
-                  </Dialog>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => {
+                          setSelectedBooking(booking);
+                          setData('rating', booking.rating || 0);
+                          setData('feedback', booking.feedback || '');
+                        }}
+                      >
+                        Edit Rating
+                      </Button>
+                    </div>
+                  ) : (
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => {
+                        setSelectedBooking(booking);
+                        setData('rating', 0);
+                        setData('feedback', '');
+                      }}
+                    >
+                      Rate Experience
+                    </Button>
+                  )}
                 </div>
               )}
             </div>
@@ -290,79 +207,148 @@ export default function Trips(){
   );
 
   return (
-   <AppLayout breadcrumbs={breadcrumbs}>
-    <div className="min-h-screen flex flex-col">
-      
-      <main className="flex-1 container mx-auto px-4 py-8">
-        <div className="max-w-6xl mx-auto space-y-8">
-          <div className="space-y-2">
-            <h1 className="text-4xl font-bold">My Bookings</h1>
-            <p className="text-muted-foreground">View and manage your tour bookings</p>
+    <AppLayout breadcrumbs={breadcrumbs}>
+      <div className="min-h-screen flex flex-col">
+        <main className="flex-1 container mx-auto px-4 py-8">
+          <div className="max-w-6xl mx-auto space-y-8">
+            <div className="space-y-2">
+              <h1 className="text-4xl font-bold">My Bookings</h1>
+              <p className="text-muted-foreground">View and manage your tour bookings</p>
+            </div>
+
+            <Tabs defaultValue="all" className="w-full">
+              <TabsList className="grid w-full max-w-md grid-cols-4">
+                <TabsTrigger value="all">All ({bookings.length})</TabsTrigger>
+                <TabsTrigger value="pending">Pending ({upcomingBookings.length})</TabsTrigger>
+                <TabsTrigger value="confirmed">Confirmed ({completedBookings.length})</TabsTrigger>
+                <TabsTrigger value="cancelled">Cancelled ({cancelledBookings.length})</TabsTrigger>
+              </TabsList>
+
+              <TabsContent value="all" className="space-y-4 mt-6">
+                {bookings.map(renderBookingCard)}
+              </TabsContent>
+
+              <TabsContent value="pending" className="space-y-4 mt-6">
+                {upcomingBookings.length > 0 ? (
+                  upcomingBookings.map(renderBookingCard)
+                ) : (
+                  <Card>
+                    <CardHeader>
+                      <CardTitle>No Upcoming Bookings</CardTitle>
+                      <CardDescription>You don't have any upcoming tours scheduled.</CardDescription>
+                    </CardHeader>
+                  </Card>
+                )}
+              </TabsContent>
+
+              <TabsContent value="confirmed" className="space-y-4 mt-6">
+                {completedBookings.length > 0 ? (
+                  completedBookings.map(renderBookingCard)
+                ) : (
+                  <Card>
+                    <CardHeader>
+                      <CardTitle>No Completed Bookings</CardTitle>
+                      <CardDescription>You haven't completed any tours yet.</CardDescription>
+                    </CardHeader>
+                  </Card>
+                )}
+              </TabsContent>
+
+              <TabsContent value="cancelled" className="space-y-4 mt-6">
+                {cancelledBookings.length > 0 ? (
+                  cancelledBookings.map(renderBookingCard)
+                ) : (
+                  <Card>
+                    <CardHeader>
+                      <CardTitle>No Cancelled Bookings</CardTitle>
+                      <CardDescription>You don't have any cancelled bookings.</CardDescription>
+                    </CardHeader>
+                  </Card>
+                )}
+              </TabsContent>
+            </Tabs>
           </div>
+        </main>
 
-          <Tabs defaultValue="all" className="w-full ">
-            <TabsList className="grid w-full max-w-md grid-cols-4">
-              <TabsTrigger value="all">
-                All ({bookings.length})
-              </TabsTrigger>
-              <TabsTrigger value="pending">
-                Pending ({upcomingBookings.length})
-              </TabsTrigger>
-              <TabsTrigger value="confirmed">
-                Confirmed ({completedBookings.length})
-              </TabsTrigger>
-              <TabsTrigger value="cancelled">
-                Cancelled ({cancelledBookings.length})
-              </TabsTrigger>
-            </TabsList>
+        
+        {selectedBooking && (
+          <div 
+            className="fixed inset-0 z-50 flex items-start justify-center pt-20 px-4"
+            onClick={(e) => {
+              if (e.target === e.currentTarget) {
+                setSelectedBooking(null);
+              }
+            }}
+          >
+            <div className="w-full max-w-md bg-background border rounded-lg shadow-lg p-6 animate-in fade-in zoom-in">
+              <div className="flex justify-between items-start mb-4">
+                <div>
+                  <h3 className="text-lg font-semibold">
+                    {selectedBooking.rating ? "Edit Your Rating" : "Rate Your Experience"}
+                  </h3>
+                  <p className="text-sm text-muted-foreground">
+                    How was your {selectedBooking.destination} experience?
+                  </p>
+                </div>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => setSelectedBooking(null)}
+                >
+                  ✕
+                </Button>
+              </div>
 
-            <TabsContent value="all" className="space-y-4 mt-6 h-30">
-              {bookings.map(renderBookingCard)}
-            </TabsContent>
+              <div className="space-y-6 py-4">
+                <div className="space-y-2">
+                  <Label>Your Rating</Label>
+                  <div className="flex gap-2">
+                    {[1, 2, 3, 4, 5].map((star) => (
+                      <button
+                        key={star}
+                        type="button"
+                        onClick={() => setData('rating', star)}
+                        className="transition-transform hover:scale-110"
+                      >
+                        <Star
+                          className={`w-8 h-8 ${
+                            star <= data.rating
+                              ? "fill-yellow-400 text-yellow-400"
+                              : "text-muted-foreground"
+                          }`}
+                        />
+                      </button>
+                    ))}
+                  </div>
+                </div>
 
-            <TabsContent value="pending" className="space-y-4 mt-6 h-30">
-              {upcomingBookings.length > 0 ? (
-                upcomingBookings.map(renderBookingCard)
-              ) : (
-                <Card>
-                  <CardHeader>
-                    <CardTitle>No Upcoming Bookings</CardTitle>
-                    <CardDescription>You don't have any upcoming tours scheduled.</CardDescription>
-                  </CardHeader>
-                </Card>
-              )}
-            </TabsContent>
+                <div className="space-y-2">
+                  <Label htmlFor="review">Your Review (Optional)</Label>
+                  <Textarea
+                    id="review"
+                    placeholder="Share your experience with others..."
+                    value={data.feedback}
+                    onChange={(e) => setData('feedback', e.target.value)}
+                    rows={4}
+                  />
+                </div>
+              </div>
 
-            <TabsContent value="confirmed" className="space-y-4 mt-6 ">
-              {completedBookings.length > 0 ? (
-                completedBookings.map(renderBookingCard)
-              ) : (
-                <Card>
-                  <CardHeader>
-                    <CardTitle>No Completed Bookings</CardTitle>
-                    <CardDescription>You haven't completed any tours yet.</CardDescription>
-                  </CardHeader>
-                </Card>
-              )}
-            </TabsContent>
-
-            <TabsContent value="cancelled" className="space-y-4 mt-6 h-30">
-              {cancelledBookings.length > 0 ? (
-                cancelledBookings.map(renderBookingCard)
-              ) : (
-                <Card>
-                  <CardHeader>
-                    <CardTitle>No Cancelled Bookings</CardTitle>
-                    <CardDescription>You don't have any cancelled bookings.</CardDescription>
-                  </CardHeader>
-                </Card>
-              )}
-            </TabsContent>
-          </Tabs>
-        </div>
-      </main>
-    </div>
-      </AppLayout>
+              <div className="flex justify-end gap-3 pt-4">
+                <Button variant="outline" onClick={() => setSelectedBooking(null)}>
+                  Cancel
+                </Button>
+                <Button 
+                  onClick={handleRatingSubmit} 
+                  disabled={data.rating === 0 || processing}
+                >
+                  {selectedBooking.rating ? "Update Rating" : "Submit Rating"}
+                </Button>
+              </div>
+            </div>
+          </div>
+        )}
+      </div>
+    </AppLayout>
   );
-};
-
+}

@@ -11,16 +11,21 @@ use Inertia\Inertia;
 
 class DestinationsController extends Controller
 {
+
 public function index()
 {
-
-    $destinations = Destinations::withCount('bookings')->get();
+    $destinations = Destinations::withCount([
+        'bookings',
+        'bookings as rating_count' => function ($query) {
+            $query->whereNotNull('rating');
+        }
+    ])
+    ->withAvg('bookings', 'rating') 
+    ->get();
 
     $totalBookings = $destinations->sum('bookings_count');
-
     $activeTours = $destinations->where('status', 'active')->count();
 
-    $avgRating = $destinations->avg('rating') ?? 0;
     $destinationsWithPercentage = $destinations->map(function ($dest) use ($totalBookings) {
         $dest->booking_percentage = $totalBookings > 0 
             ? round(($dest->bookings_count / $totalBookings) * 100, 1) 
@@ -28,19 +33,21 @@ public function index()
         return $dest;
     });
 
+    $allRatedBookings = Booking::whereNotNull('rating')->get();
+    $globalAvgRating = $allRatedBookings->avg('rating');
+
     $stats = [
         'total_destinations' => $destinations->count(),
         'active_tours' => $activeTours,
         'total_bookings' => $totalBookings,
-        'avg_rating' => round($avgRating, 1),
+        'avg_rating' => $globalAvgRating ? round($globalAvgRating, 1) : 0,
     ];
 
     return Inertia::render('Admin/ManageDestinations', [
-        'destinations' => $destinationsWithPercentage, 
+        'destinations' => $destinationsWithPercentage,
         'stats' => $stats,
     ]);
 }
- 
     public function store(Request $request)
     {
         

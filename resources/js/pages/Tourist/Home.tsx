@@ -26,7 +26,7 @@ interface Destinations{
     category: string;
     location: string;
     price: number;
-    rating: number;
+    average_rating: number;
     bookings: number;
     description: string;
     status: string;
@@ -35,6 +35,7 @@ interface Destinations{
     guests_max: number;
     duration: number;
     updated_at: string;
+    rating_count: number;
   }
 interface PageProps {
   flash: {
@@ -51,7 +52,7 @@ export default function Home() {
   const [visibleCount, setVisibleCount] = useState(6);
   const {destinations =[], flash } = usePage().props as PageProps;
   
- 
+ console.log(destinations); 
   const categories = [
     { id: "all", name: "All Tours" },
     { id: "whaleshark", name: "Whale Shark" },
@@ -198,8 +199,8 @@ const filteredDestinations = destinations.filter((dest) => {
                       </CardTitle>
                       <div className="flex items-center space-x-1">
                         <Star className="w-4 h-4 fill-amber-400 text-amber-400" />
-                        <span className="text-sm font-medium">{destination.rating}</span>
-                        <span className="text-xs text-muted-foreground">({destination.price})</span>
+                        <span className="text-sm font-medium">{destination.average_rating}</span>
+                        <span className="text-xs text-muted-foreground">({destination.rating_count})</span>
                       </div>
                     </div>
                     <CardDescription className="line-clamp-2">

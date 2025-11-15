@@ -36,8 +36,9 @@ interface Destination {
   category: string;
   location: string;
   price: number;
-  rating: number;
+  rating_count: number;
   bookings: number;
+  average_rating: number;
   description: string;
   status: string;
   duration: string;
@@ -126,8 +127,8 @@ export default function TourDetails({destination}: PageProps) {
                 <div className="flex items-center gap-6 text-muted-foreground mb-6">
                   <div className="flex items-center gap-1">
                     <Star className="w-5 h-5 fill-amber-400 text-amber-400" />
-                    <span className="font-semibold">{destination.rating}</span>
-                    <span>({destination.duration} reviews)</span>
+                    <span className="font-semibold">{destination.average_rating}</span>
+                    <span>({destination.rating_count} reviews)</span>
                   </div>
                   <div className="flex items-center gap-1">
                     <MapPin className="w-4 h-4" />

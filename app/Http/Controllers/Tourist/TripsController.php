@@ -13,6 +13,7 @@ class TripsController extends Controller
     public function index()
     {
         $bookings = Booking::with(['user', 'destination'])
+            ->where('tourist_id', Auth::id())
             ->orderBy('created_at', 'asc')
             ->get()
             ->transform(function ($booking) {
@@ -39,19 +40,22 @@ class TripsController extends Controller
         ]);
     }
     public function rateBooking(Request $request, Booking $booking)
-        {
-            $request->validate([
-                'rating' => 'required|integer|min:1|max:5',
-                'feedback' => 'nullable|string|max:500',
-            ]);
+    {
+        $request->validate([
+            'rating' => 'required|integer|min:1|max:5',
+            'feedback' => 'nullable|string|max:1000',
+        ]);
 
-            $booking->update([
-                'rating' => $request->rating,
-                'feedback' => $request->feedback,
-            ]);
-
-            return back()->with('message', 'Thank you for your feedback!');
+        // Ensure the booking belongs to the authenticated user
+        if ($booking->tourist_id !== Auth::id()) {
+            return redirect()->route('tourist.trips')->with('error', 'Unauthorized action.');
         }
 
+        $booking->rating = $request->input('rating');
+        $booking->feedback = $request->input('feedback');
+        $booking->save();
+
+        return redirect()->route('tourist.trips')->with('success', 'Thank you for your feedback!');
+    }
 
 }
