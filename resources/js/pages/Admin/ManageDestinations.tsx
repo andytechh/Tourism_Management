@@ -1,171 +1,165 @@
-  import AppLayout from '@/layouts/app-layout';
-  import { type BreadcrumbItem } from '@/types';
-  import { Head, useForm, usePage} from '@inertiajs/react';
-  import { route } from 'ziggy-js';
-  import React, { FormEvent, useState, useEffect } from "react";
-  import {
-    Plus,
-    Search,
-    Filter,
-    MoreHorizontal,
-    Edit,
-    Trash2,
-    Eye,
-    MapPin,
-    Star,
-    Users,
-    Calendar,
-    CheckCircle2Icon,
-    Megaphone,
-    ChevronDown
-  } from "lucide-react";
-  import {
-    Alert,
-    AlertDescription,
-    AlertTitle,
-  } from "@/components/ui/alert"
-  import { Button } from "@/components/ui/button";
-  import { Input } from "@/components/ui/input";
-  import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-  import { Badge } from "@/components/ui/badge";
-  import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-  import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
-  import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-  import { Label } from "@/components/ui/label";
-  import { Textarea } from "@/components/ui/textarea";
-  import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-  import { motion } from "framer-motion"
-  import { DropdownMenuCheckboxItem, DropdownMenuLabel, DropdownMenuSeparator } from '@radix-ui/react-dropdown-menu';
-  import { Checkbox } from '@/components/ui/checkbox';
-  import Swal from "sweetalert2";
+import AppLayout from '@/layouts/app-layout';
+import { type BreadcrumbItem } from '@/types';
+import { Head, useForm, usePage } from '@inertiajs/react';
+import { route } from 'ziggy-js';
+import React, { FormEvent, useState, useEffect } from "react";
+import {
+  Plus,
+  Search,
+  Filter,
+  MoreHorizontal,
+  Edit,
+  Trash2,
+  Eye,
+  MapPin,
+  Star,
+  Users,
+  Calendar,
+  CheckCircle2Icon,
+  Megaphone,
+  ChevronDown
+} from "lucide-react";
+import {
+  Alert,
+  AlertDescription,
+  AlertTitle,
+} from "@/components/ui/alert"
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { motion } from "framer-motion"
+import { Checkbox } from '@/components/ui/checkbox';
+import Swal from "sweetalert2";
 
-  const breadcrumbs: BreadcrumbItem[] = [
-      {
-          title: 'Destinations Management',
-          href: route('admin.destinations'), 
-      },
-  ];
-    interface Destinations{
-    id: number;
-    name: string;
-    category: string;
-    location: string;
-    price: number;
-    rating_count: number;
-    bookings_count: number;
-    description: string;
-    duration: string;
-    status: string;
-    package_options: string;
-    guests_min: number;
-    guests_max: number;
-    image: string;        
-    created_at: string;
-    updated_at: string;
-    }
-    interface Stats {
-    total_destinations: number;
-    active_tours: number;
-    total_bookings: number;
-    avg_rating: number;
-  }
+const breadcrumbs: BreadcrumbItem[] = [
+  {
+    title: '',
+    href: route('admin.destinations'),
+  },
+];
 
-  interface PageProps{
-    flash: {
-      message?: string
-    },
-    destinations: 
-      Destinations[];
-    
+interface Destinations {
+  id: number;
+  name: string;
+  category: string;
+  location: string;
+  price: number;
+  rating_count: number;
+  bookings_count: number;
+  description: string;
+  duration: string;
+  status: string;
+  package_options: string;
+  guests_min: number;
+  guests_max: number;
+  image: string;
+  created_at: string;
+  updated_at: string;
+}
+
+interface Stats {
+  total_destinations: number;
+  active_tours: number;
+  total_bookings: number;
+  avg_rating: number;
+}
+
+interface PageProps {
+  flash: {
+    message?: string
+  },
+  destinations: Destinations[];
   stats?: Stats;
+}
 
-  }
-  export default function ManageDestinations() {
-    const [searchTerm, setSearchTerm] = useState("");
-    const [categoryFilter, setCategoryFilter] = useState<string>("all");
-    const [statusFilter, setStatusFilter] = useState<string>("all");
-    const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
-    const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
-    const [selectedDestination, setSelectedDestination] = useState<Destinations | null>(null);
-    const [packageOptions, setPackageOptions] = useState({
-    individual: false,
-    group: false,
-    family: false,
-    private: false,
+export default function ManageDestinations() {
+  const [searchTerm, setSearchTerm] = useState("");
+  const [categoryFilter, setCategoryFilter] = useState<string>("all");
+  const [statusFilter, setStatusFilter] = useState<string>("all");
+  const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
+  const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
+  const [viewDestination, setViewDestination] = useState<Destinations | null>(null); 
+  const [selectedDestination, setSelectedDestination] = useState<Destinations | null>(null);
+
+  const { data, put, setData, post, processing, errors, delete: destroy, reset: resetInertiaForm } = useForm({
+    name: '',
+    category: '',
+    location: '',
+    price: '',
+    duration: '',
+    rating: '',
+    bookings: '',
+    description: '',
+    guests_min: '',
+    guests_max: '',
+    status: '',
+    package_options: [] as string[],
+    image: null as File | null,
   });
-    const { data, put, setData, post, processing, errors, delete: destroy, reset: resetInertiaForm } = useForm({
-      name: '',
-      category: '',
-      location:  '',
-      price:  '',
-      duration: '',
-      rating: '',
-      bookings: '',
-      description:  '',
-      guests_min: '',
-      guests_max: '',
-      status:  '',
-      package_options: [] as string[],
-      image: null as File | null,
-    });
-
 
   useEffect(() => {
-  if (selectedDestination) {
-    let packageOptions = [];
-    try {
-      if (typeof selectedDestination.package_options === 'string') {
-        packageOptions = JSON.parse(selectedDestination.package_options);
-      } else if (Array.isArray(selectedDestination.package_options)) {
-        packageOptions = selectedDestination.package_options;
+    if (selectedDestination) {
+      let packageOptions = [];
+      try {
+        if (typeof selectedDestination.package_options === 'string') {
+          packageOptions = JSON.parse(selectedDestination.package_options);
+        } else if (Array.isArray(selectedDestination.package_options)) {
+          packageOptions = selectedDestination.package_options;
+        }
+      } catch (e) {
+        packageOptions = [];
       }
-    } catch (e) {
-      packageOptions = [];
-    }
 
-    setData({
-      name: selectedDestination.name,
-      category: selectedDestination.category,
-      location: selectedDestination.location,
-      price: selectedDestination.price.toString(),
-      duration: selectedDestination.duration?.toString() || '',
-      guests_min: selectedDestination.guests_min?.toString() || '',
-      guests_max: selectedDestination.guests_max?.toString() || '',
-      rating: selectedDestination.rating,
-      description: selectedDestination.description,
-      status: selectedDestination.status,
-      package_options: packageOptions,
-      image: null,
-    });
-  }
-}, [selectedDestination, setData]);
+      setData({
+        name: selectedDestination.name,
+        category: selectedDestination.category,
+        location: selectedDestination.location,
+        price: selectedDestination.price.toString(),
+        duration: selectedDestination.duration?.toString() || '',
+        guests_min: selectedDestination.guests_min?.toString() || '',
+        guests_max: selectedDestination.guests_max?.toString() || '',
+        rating: selectedDestination.rating_count?.toString() || '',
+        description: selectedDestination.description,
+        status: selectedDestination.status,
+        package_options: packageOptions,
+        image: null,
+      });
+    }
+  }, [selectedDestination, setData]);
 
   const formatDate = (dateString: string): string => {
-        const options: Intl.DateTimeFormatOptions = { 
-          year: 'numeric', 
-          month: 'short', 
-          day: 'numeric' 
-        };
-        return new Date(dateString).toLocaleDateString('en-US', options);
-      };
+    const options: Intl.DateTimeFormatOptions = {
+      year: 'numeric',
+      month: 'short',
+      day: 'numeric'
+    };
+    return new Date(dateString).toLocaleDateString('en-US', options);
+  };
 
   const formatNumber = (num: number): string => {
-      if (num >= 1000) {
-        return (num / 1000).toFixed(1).replace(/\.0$/, '') + 'k';
-      }
-      return num.toString();
-    };
+    if (num >= 1000) {
+      return (num / 1000).toFixed(1).replace(/\.0$/, '') + 'k';
+    }
+    return num.toString();
+  };
 
   const formatRating = (rating: number): string => {
-      return rating.toFixed(1);
-    };
+    return rating.toFixed(1);
+  };
 
   const { destinations = [], flash, stats = {
-      total_destinations: 0,
-      active_tours: 0,
-      total_bookings: 0,
-      avg_rating: 0
-    } } = usePage().props as PageProps;
+    total_destinations: 0,
+    active_tours: 0,
+    total_bookings: 0,
+    avg_rating: 0
+  } } = usePage().props as PageProps;
 
   const filteredDestinations = destinations.filter((dest) => {
     const matchesSearch =
@@ -182,656 +176,767 @@
   });
 
   const handleSumbit = (e: React.FormEvent) => {
-      e.preventDefault();
-      post(route('admin.destinations.store'), {
-        preserveScroll: true,
-        onSuccess: () => {
-          setIsAddDialogOpen(false);
-          resetInertiaForm();
-          Swal.fire({
+    e.preventDefault();
+    post(route('admin.destinations.store'), {
+      preserveScroll: true,
+      onSuccess: () => {
+        setIsAddDialogOpen(false);
+        resetInertiaForm();
+        Swal.fire({
           title: "Destination Created successfully!",
           icon: "success",
           draggable: true
+        });
+      },
+      onError: (errors) => {
+        console.error('Submission failed:', errors);
+      }
     });
-        },
-        onError: (errors) => {
-          console.error('Submission failed:', errors);
-        }
-      });
-    };
+  };
 
-    const handleEditDestination = (destination: any) => { 
+  const handleEditDestination = (destination: any) => {
     setSelectedDestination(destination);
     setIsEditDialogOpen(true);
   };
 
-const handleUpdate = (e: React.FormEvent) => {
-  e.preventDefault();
-if (!selectedDestination) return;
+  const handleUpdate = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!selectedDestination) return;
 
-  if (!selectedDestination) return;
-  // Prepare FormData
-  const formData = new FormData();
-  if (data.name !== undefined && data.name !== null) formData.append('name', String(data.name));
-  if (data.category !== undefined && data.category !== null) formData.append('category', String(data.category));
-  if (data.location !== undefined && data.location !== null) formData.append('location', String(data.location));
-  if (data.price !== undefined && data.price !== null) formData.append('price', String(data.price));
-  if (data.rating !== undefined && data.rating !== null) formData.append('rating', String(data.rating));
-  if (data.status !== undefined && data.status !== null) formData.append('status', String(data.status));  
-  if (data.guests_min !== undefined && data.guests_min !== null) formData.append('guests_min', String(data.guests_min));
-  if (data.guests_max !== undefined && data.guests_max !== null) formData.append('guests_max', String(data.guests_max));
-  if (data.duration !== undefined && data.duration !== null) formData.append('duration', String(data.duration));
-  if (data.package_options !== undefined && data.package_options !== null) formData.append('package_options', JSON.stringify(data.package_options));
-  if (data.description !== undefined && data.description !== null) formData.append('description', String(data.description));
-   if (data.image instanceof File) {
-    formData.append('image', data.image); 
-  } else if (data.image === null || data.image === '') {
-    formData.append('image', ''); 
-  }
-
-  post(route('admin.destinations.update', selectedDestination.id), {
-    data: formData,
-    forceFormData: true,
-    headers: { 'X-HTTP-Method-Override': 'PUT' },
-    preserveScroll: true,
-    onSuccess: () => {
-      setIsAddDialogOpen(false);
-      setIsEditDialogOpen(false);
-      resetInertiaForm();
-      Swal.fire({
-      title: "Destination updated successfully!",
-      icon: "success",
-      draggable: true
-    });
-    },
-    onError: (errors) => {
-      console.error('Submission failed:', errors);
+    const formData = new FormData();
+    if (data.name !== undefined && data.name !== null) formData.append('name', String(data.name));
+    if (data.category !== undefined && data.category !== null) formData.append('category', String(data.category));
+    if (data.location !== undefined && data.location !== null) formData.append('location', String(data.location));
+    if (data.price !== undefined && data.price !== null) formData.append('price', String(data.price));
+    if (data.rating !== undefined && data.rating !== null) formData.append('rating', String(data.rating));
+    if (data.status !== undefined && data.status !== null) formData.append('status', String(data.status));
+    if (data.guests_min !== undefined && data.guests_min !== null) formData.append('guests_min', String(data.guests_min));
+    if (data.guests_max !== undefined && data.guests_max !== null) formData.append('guests_max', String(data.guests_max));
+    if (data.duration !== undefined && data.duration !== null) formData.append('duration', String(data.duration));
+    if (data.package_options !== undefined && data.package_options !== null) formData.append('package_options', JSON.stringify(data.package_options));
+    if (data.description !== undefined && data.description !== null) formData.append('description', String(data.description));
+    if (data.image instanceof File) {
+      formData.append('image', data.image);
+    } else if (data.image === null || data.image === '') {
+      formData.append('image', '');
     }
-  });
-};
-    const handleDelete = (id: number, name: string) => {
-    Swal.fire({
-    title: "Are you sure?",
-    text: "This action cannot be undone.",
-    icon: "warning",
-    showCancelButton: true,
-    confirmButtonText: "Yes, delete it!",
-    cancelButtonText: "Cancel",
-  }).then((result) => {
-    if (result.isConfirmed) {
-      destroy(route("admin.destinations.destroy", id));
-      Swal.fire("Deleted!", "The record has been deleted.", "success");
-    }
-  }) 
-}
-return (
-      <AppLayout breadcrumbs={breadcrumbs}>
-  <div className="p-6 space-y-6">
-    {/* Header */}
-    <div className="flex items-center justify-between">
-      <div>
-        <div>
-          {flash.message &&(
-            <Alert>
-            <Megaphone />
-            <AlertTitle>Success!</AlertTitle>
-            <AlertDescription>
-              {flash.message}
-            </AlertDescription>
-          </Alert>
-          )}
-        </div>
-        <h1 className="text-3xl font-bold">Manage Destinations</h1>
-        <p className="text-muted-foreground">Create and manage tour packages and attractions</p>
-      </div>
-    <Dialog
-        open={isAddDialogOpen}
-        onOpenChange={(open) => {
-          if (!open) {
-            resetInertiaForm();
-          }
-          setIsAddDialogOpen(open);
-          if (open) setIsEditDialogOpen(false); 
-        }}
-      >
-        <DialogTrigger asChild>
-          <Button className="btn-ocean">
-            <Plus className="w-4 h-4 mr-2"/>
-              Add Destination
-          </Button>
-        </DialogTrigger>
-        <DialogContent className="max-w-2xl text-accent-foreground">
-          <form onSubmit={handleSumbit} encType="multipart/form-data">
-            {/* Errors Checks */}
-            {Object.keys(errors).length > 0 && (<Alert>
-              <CheckCircle2Icon />
-              <AlertTitle>Errors! Check Inputs</AlertTitle>
-              <AlertDescription>
-                <ul>
-                  {Object.entries(errors).map(([key, message]) => (<li key={key}>{message as string}</li>) )}
-                </ul>
-              </AlertDescription>
-            </Alert>
-              )}
-          <DialogHeader>
-            <DialogTitle>Add New Destination</DialogTitle>
-            <DialogDescription>Create a new tour package or attraction</DialogDescription>
-          </DialogHeader>
-          <div className="grid grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <Label htmlFor="name">Destination Name</Label>
-              <Input id="name" placeholder="Enter destination name" value={data.name} onChange={(e) => setData('name', e.target.value)} required/>
-            </div>
-            <div className="space-y-2 text-accent-foreground">
-                <Label htmlFor="category">Category</Label>
-                <Select 
-                  value={data.category} 
-                  onValueChange={(value) => setData('category', value)} required
-                >
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select category" />
-                  </SelectTrigger>      
-                  <SelectContent className='text-accent-foreground'>
-                    <SelectItem value="marine">Marine Adventure</SelectItem>
-                    <SelectItem value="nature">Nature Experience</SelectItem>
-                    <SelectItem value="cultural">Cultural Tour</SelectItem>
-                    <SelectItem value="whaleshark">Whale Shark</SelectItem>
-                    <SelectItem value="adventure">Adventure</SelectItem>
-                  </SelectContent>
-                </Select>
-          </div>
-            <div className="space-y-2">
-              <Label htmlFor="location">Location</Label>
-              <Input id="location" placeholder="Enter location" value={data.location} onChange={(e) => setData('location', e.target.value)} required/>
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="price">Price</Label>
-              <Input id="price" placeholder="₱0.00" value={data.price} onChange={(e) => setData('price', e.target.value)} required/>
-            </div>
 
-             <div className="space-y-2">
-              <Label htmlFor="duration">Time duration</Label>
-              <Input id="duration" placeholder="0" value={data.duration} onChange={(e) => setData('duration', e.target.value)} required/>
-            </div> 
-
-             <div className="space-y-2">
-              <Label htmlFor="min guests">Min Guests</Label>
-              <Input id="guests_min" placeholder="1" value={data.guests_min} onChange={(e) => setData('guests_min', e.target.value)} required/>
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="max guests">Max Guests</Label>
-              <Input id="guests_max" placeholder="8" value={data.guests_max} onChange={(e) => setData('guests_max', e.target.value)}/>
-            </div>  
-
-        {/* Package Options Dropdown */}
-          <div className="space-y-2">
-            <Label>Package Options</Label>
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button variant="outline" className="w-full justify-between">
-                  {data.package_options.length > 0
-                    ? `${data.package_options.length} selected`
-                    : 'Select package types'} 
-                  <ChevronDown className="w-4 h-4 opacity-50" />
-                </Button>
-              </DropdownMenuTrigger>
-             <DropdownMenuContent
-                className="w-56 text-accent-foreground"
-                onInteractOutside={(e) => {
-                }}
-                onClick={(e) => e.stopPropagation()}
-              >
-                <DropdownMenuLabel>Package Types</DropdownMenuLabel>
-                <DropdownMenuSeparator />
-                {([' individual ', ' group ', ' family ', ' private '] as const).map((option) => (
-                  <DropdownMenuItem
-                    key={option}
-                    className="cursor-pointer flex items-center gap-2 px-2 py-1.5 rounded-sm hover:bg-accent focus:bg-accent outline-none"
-                    onSelect={(e) => e.preventDefault()} 
-                  >
-                    <Checkbox
-                      checked={data.package_options.includes(option)}
-                      required
-                      onCheckedChange={(checked) => {
-                        const newOptions = checked
-                          ? [...data.package_options, option]
-                          : data.package_options.filter((item) => item !== option);
-                        setData('package_options', newOptions);
-                      }}
-                      className="rounded-sm"
-                    />
-                    <span>{option.charAt(0).toUpperCase() + option.slice(1)}</span>
-                  </DropdownMenuItem>
-                ))}
-              </DropdownMenuContent>
-            </DropdownMenu>
-          </div>
-            
-            <div className="col-span-2 space-y-2">
-              <Label htmlFor="description">Description</Label>
-              <Textarea id="description" placeholder="Enter destination description" value={data.description} onChange={(e) => setData('description', e.target.value)}/>
-            </div>
-
-        <div className="col-span-2 space-y-2">
-        <Label htmlFor="description">Destination image</Label>
-            <Input
-              type="file"
-              accept="image/*"
-              id="destination-img"
-              onChange={(e) => setData("image", e.target.files?.[0] ?? null)}
-            />
-          </div>
-          </div>
-          <div className="flex justify-end gap-2 mt-2">
-            <Button variant="outline" onClick={() => {setIsAddDialogOpen(false); resetInertiaForm();}}>
-              Cancel
-            </Button>
-            <Button className="btn-ocean" disabled={processing} type='submit'>Create Destination</Button>
-          </div>
-          </form>
-        </DialogContent>
-      </Dialog>
-    </div>
-
-  {/* Edit Destination Dialog */} 
-    <Dialog
-        open={isEditDialogOpen}
-        onOpenChange={(open) => {
-          if (!open) {
-            resetInertiaForm();
-            setSelectedDestination(null);
-          }
-          setIsEditDialogOpen(open);
-          if (open) setIsAddDialogOpen(false); 
-        }}
-      >
-      <DialogContent className="sm:max-w-[600px] text-accent-foreground overflow-auto ">
-        <form onSubmit={handleUpdate} encType="multipart/form-data"> 
-          
-          {/* Errors Checks */}
-           {Object.keys(errors).length > 0 && (<Alert>
-              <CheckCircle2Icon />
-              <AlertTitle>Errors! Check Inputs</AlertTitle>
-              <AlertDescription>
-                <ul>
-                  {Object.entries(errors).map(([key, message]) => (<li key={key}>{message as string}</li>) )}
-                </ul>
-              </AlertDescription>
-            </Alert>
-              )}
-          <DialogHeader>
-            <DialogTitle>Edit Destination</DialogTitle>
-            <DialogDescription>Update destination information and settings</DialogDescription>
-          </DialogHeader>
-
-  {selectedDestination && (
-    <div className="grid grid-cols-2 gap-4 py-4">
-      <div className="space-y-2">
-        <Label htmlFor="edit-name">Destination Name</Label>
-        <Input
-          id="edit-name" 
-          placeholder="Enter destination name"
-          value={data.name}
-          onChange={(e) => setData('name', e.target.value)}
-        />
-      </div>
-
-      <div className="space-y-2">
-        <Label htmlFor="edit-category">Category</Label>
-        <Select
-          value={data.category}
-          onValueChange={(value) => setData('category', value)}
-        >
-          <SelectTrigger>
-            <SelectValue placeholder="Select category" />
-          </SelectTrigger>
-          <SelectContent >
-            <SelectItem value="marine">Marine Adventure</SelectItem>
-            <SelectItem value="nature">Nature Experience</SelectItem>
-            <SelectItem value="cultural">Cultural Tour</SelectItem>
-            <SelectItem value="whaleshark">Whale Shark</SelectItem>
-            <SelectItem value="adventure">Adventure</SelectItem>
-          </SelectContent>
-        </Select>
-      </div>
-
-      <div className="space-y-2">
-        <Label htmlFor="edit-status">Status</Label>
-        <Select
-          value={data.status}
-          onValueChange={(value) => setData('status', value)}
-        >
-          <SelectTrigger>
-            <SelectValue placeholder="Update Status" />
-          </SelectTrigger>
-          <SelectContent >
-            <SelectItem value="active">Active</SelectItem>
-            <SelectItem value="inactive">Inactive</SelectItem>
-            <SelectItem value="draft">Draft</SelectItem>
-          </SelectContent>
-        </Select>
-      </div>
-
-      <div className="space-y-2">
-        <Label htmlFor="edit-location">Location</Label>
-        <Input
-          id="edit-location"
-          placeholder="Enter location"
-          value={data.location}
-          onChange={(e) => setData('location', e.target.value)}
-        />
-      </div>
-
-      <div className="space-y-2">
-        <Label htmlFor="edit-price">Price</Label>
-        <Input
-          id="edit-price"
-          placeholder="₱0.00"
-          value={data.price}
-          onChange={(e) => setData('price', e.target.value)}
-        />
-      </div>
-
-      <div className="space-y-2">
-        <Label htmlFor="edit-guests-min">Min Guests</Label>
-        <Input
-          id="edit-guests-min"
-          type="number"
-          value={data.guests_min}
-          onChange={(e) => setData('guests_min', e.target.value)}
-        />
-      </div>
-
-      <div className="space-y-2">
-        <Label htmlFor="edit-guests-max">Max Guests</Label>
-        <Input
-          id="edit-guests-max"
-          type="number"
-          value={data.guests_max}
-          onChange={(e) => setData('guests_max', e.target.value)}
-        />
-      </div>
-
-      {/* Package Options */}
-      <div className="space-y-2">
-        <Label>Package Options</Label>
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button variant="outline" className="w-full justify-between">
-              {data.package_options.length > 0
-                ? `${data.package_options.length} selected`
-                : 'Select package types'}
-              <ChevronDown className="w-4 h-4 opacity-50" />
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent className="w-56 text-accent-foreground">
-            <DropdownMenuLabel>Package Types</DropdownMenuLabel>
-            <DropdownMenuSeparator />
-            {(['individual', 'group', 'family', 'private'] as const).map((option) => (
-              <DropdownMenuItem
-                key={option}
-                className="cursor-pointer flex items-center gap-2 px-2 py-1.5 hover:bg-accent"
-                onSelect={(e) => e.preventDefault()}
-              >
-                <Checkbox
-                  checked={data.package_options.includes(option)}
-                  onCheckedChange={(checked) => {
-                    const newOptions = checked
-                      ? [...data.package_options, option]
-                      : data.package_options.filter((item) => item !== option);
-                    setData('package_options', newOptions);
-                  }}
-                />
-                <span>{option.charAt(0).toUpperCase() + option.slice(1)}</span>
-              </DropdownMenuItem>
-            ))}
-          </DropdownMenuContent>
-        </DropdownMenu>
-  </div>
-
-      <div className="col-span-2 space-y-2">
-        <Label htmlFor="edit-description">Description</Label>
-        <Textarea
-          id="edit-description"
-          placeholder="Enter destination description"
-          value={data.description}
-          onChange={(e) => setData('description', e.target.value)}
-        />
-      </div>
-
-      <div className="col-span-2 space-y-2">
-        <Label htmlFor="edit-image">Destination image</Label>
-        <Input
-          type="file"
-          accept="image/*"
-          id="edit-destination-img"
-          onChange={(e) => setData("image", e.target.files?.[0] ?? null)}
-        />
-        <div className="mt-2">
-          <Label>Current Image:</Label>
-          <img
-            src={`/storage/${selectedDestination.image}`}
-            alt={selectedDestination.name}
-            className="w-20 h-20 rounded-lg object-cover mt-1"
-          />
-        </div>
-      </div>
-    </div>
-  )}
-
-  <div className="flex justify-end gap-2 mt-4 text-accent-foreground">
-    <Button
-      type="button"
-      variant="outline"
-      onClick={() => {
+    post(route('admin.destinations.update', selectedDestination.id), {
+      data: formData,
+      forceFormData: true,
+      headers: { 'X-HTTP-Method-Override': 'PUT' },
+      preserveScroll: true,
+      onSuccess: () => {
+        setIsAddDialogOpen(false);
         setIsEditDialogOpen(false);
         resetInertiaForm();
-      }}
-    >
-      Cancel
-    </Button>
-    <Button className="btn-ocean" disabled={processing} type="submit">
-      Save Changes
-    </Button>
-  </div>
-</form>
-</DialogContent>
-</Dialog>
+        Swal.fire({
+          title: "Destination updated successfully!",
+          icon: "success",
+          draggable: true
+        });
+      },
+      onError: (errors) => {
+        console.error('Submission failed:', errors);
+      }
+    });
+  };
 
+  const handleDelete = (id: number, name: string) => {
+    Swal.fire({
+      title: "Are you sure?",
+      text: "This action cannot be undone.",
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonText: "Yes, delete it!",
+      cancelButtonText: "Cancel",
+    }).then((result) => {
+      if (result.isConfirmed) {
+        destroy(route("admin.destinations.destroy", id));
+        Swal.fire("Deleted!", "The record has been deleted.", "success");
+      }
+    })
+  };
 
-{/* Stats Cards */}
-<div className="grid grid-cols-1 md:grid-cols-4 gap-6 ">
-  <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}>
-    <Card  className='py-4'>
-      <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2 ">
-        <CardTitle className="text-sm font-medium">Total Destinations</CardTitle>
-        <MapPin className="h-4 w-4 text-muted-foreground" />
-      </CardHeader>
-      <CardContent>
-        <div className="text-2xl font-bold">{stats.total_destinations}</div>
-        <p className="text-xs text-muted-foreground">+2 from last month</p>
-      </CardContent>
-    </Card>
-  </motion.div>
+  const parsePackageOptions = (pkg: string): string[] => {
+    try {
+      return JSON.parse(pkg);
+    } catch {
+      return [];
+    }
+  };
 
-  <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }}>
-    <Card className='py-4'>
-      <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-        <CardTitle className="text-sm font-medium">Active Tours</CardTitle>
-        <Star className="h-4 w-4 text-muted-foreground" />
-      </CardHeader>
-      <CardContent>
-        <div className="text-2xl font-bold">{stats.active_tours}</div>
-        <p className="text-xs text-muted-foreground">
-          {stats.total_destinations > 0 
-            ? Math.round((stats.active_tours / stats.total_destinations) * 100) + '% of total'
-            : '0% of total'}
-        </p>
-      </CardContent>
-    </Card>
-  </motion.div>
+  return (
+    <>
+      <Head title="Donsol Tourism Management System" />
+   
+    <AppLayout breadcrumbs={breadcrumbs}>
+      <div className="p-6 space-y-6">
+        {/* Header */}
+        <div className="flex items-center justify-between">
+          <div>
+            <div>
+              {flash.message && (
+                <Alert>
+                  <Megaphone />
+                  <AlertTitle>Success!</AlertTitle>
+                  <AlertDescription>
+                    {flash.message}
+                  </AlertDescription>
+                </Alert>
+              )}
+            </div>
+            <h1 className="text-4xl md:text-5xl font-bold bg-gradient-to-r from-primary via-primary/80 to-primary/60 bg-clip-text text-transparent mb-2">Manage Destinations</h1>
+            <p className="text-muted-foreground">Create and manage tour packages and attractions</p>
+          </div>
+          <Dialog
+            open={isAddDialogOpen}
+            onOpenChange={(open) => {
+              if (!open) {
+                resetInertiaForm();
+              }
+              setIsAddDialogOpen(open);
+              if (open) setIsEditDialogOpen(false);
+            }}
+          >
+            <DialogTrigger asChild>
+              <Button className="btn-ocean">
+                <Plus className="w-4 h-4 mr-2" />
+                Add Destination
+              </Button>
+            </DialogTrigger>
+            <DialogContent className="max-w-2xl text-accent-foreground">
+              <form onSubmit={handleSumbit} encType="multipart/form-data">
+                {/* Errors Checks */}
+                {Object.keys(errors).length > 0 && (<Alert>
+                  <CheckCircle2Icon />
+                  <AlertTitle>Errors! Check Inputs</AlertTitle>
+                  <AlertDescription>
+                    <ul>
+                      {Object.entries(errors).map(([key, message]) => (<li key={key}>{message as string}</li>))}
+                    </ul>
+                  </AlertDescription>
+                </Alert>
+                  )}
+                <DialogHeader>
+                  <DialogTitle>Add New Destination</DialogTitle>
+                  <DialogDescription>Create a new tour package or attraction</DialogDescription>
+                </DialogHeader>
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="name">Destination Name</Label>
+                    <Input id="name" placeholder="Enter destination name" value={data.name} onChange={(e) => setData('name', e.target.value)} required />
+                  </div>
+                  <div className="space-y-2 text-accent-foreground">
+                    <Label htmlFor="category">Category</Label>
+                    <Select
+                      value={data.category}
+                      onValueChange={(value) => setData('category', value)} required
+                    >
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select category" />
+                      </SelectTrigger>
+                      <SelectContent className='text-accent-foreground'>
+                        <SelectItem value="marine">Marine Adventure</SelectItem>
+                        <SelectItem value="nature">Nature Experience</SelectItem>
+                        <SelectItem value="cultural">Cultural Tour</SelectItem>
+                        <SelectItem value="whaleshark">Whale Shark</SelectItem>
+                        <SelectItem value="adventure">Adventure</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="location">Location</Label>
+                    <Input id="location" placeholder="Enter location" value={data.location} onChange={(e) => setData('location', e.target.value)} required />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="price">Price</Label>
+                    <Input id="price" placeholder="₱0.00" value={data.price} onChange={(e) => setData('price', e.target.value)} required />
+                  </div>
 
-  <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }}>
-    <Card  className='py-4'>
-      <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-        <CardTitle className="text-sm font-medium">Total Bookings</CardTitle>
-        <Users className="h-4 w-4 text-muted-foreground" />
-      </CardHeader>
-      <CardContent>
-        <div className="text-2xl font-bold">{formatNumber(stats.total_bookings)}</div>
-        <p className="text-xs text-muted-foreground">
-        {stats.active_tours > 0
-        ? `Avg ${Math.round(stats.total_bookings / stats.active_tours)} per tour`
-        : 'No active tours'}
-             </p>
-      </CardContent>
-    </Card>
-  </motion.div>
+                  <div className="space-y-2">
+                    <Label htmlFor="duration">Time duration</Label>
+                    <Input id="duration" placeholder="0" value={data.duration} onChange={(e) => setData('duration', e.target.value)} required />
+                  </div>
 
-  <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.4 }}>
-    <Card  className='py-4'>
-      <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-        <CardTitle className="text-sm font-medium">Avg Rating</CardTitle>
-        <Star className="h-4 w-4 text-muted-foreground" />
-      </CardHeader>
-      <CardContent>
-        <div className="text-2xl font-bold">{formatRating(stats.avg_rating)}</div>
-        <p className="text-xs text-muted-foreground">+0.2 from last month</p>
-      </CardContent>
-    </Card>
-  </motion.div>
-</div>
+                  <div className="space-y-2">
+                    <Label htmlFor="min guests">Min Guests</Label>
+                    <Input id="guests_min" placeholder="1" value={data.guests_min} onChange={(e) => setData('guests_min', e.target.value)} required />
+                  </div>
 
-{/* Search and Filters */}
-<Card>
-  <CardHeader>
-    <div className="flex items-center justify-between text-accent-foreground">
-      <CardTitle className='overflow-hidden w-24'>Destinations</CardTitle>
-      <div className="flex items-center gap-2">
-        <div className="relative">
-          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-4 h-4" />
-          <Input
-            placeholder="Search destinations..."
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            className="pl-10 w-64 md:w-80 overflow-hidden"
-          />
+                  <div className="space-y-2">
+                    <Label htmlFor="max guests">Max Guests</Label>
+                    <Input id="guests_max" placeholder="8" value={data.guests_max} onChange={(e) => setData('guests_max', e.target.value)} />
+                  </div>
+
+                  {/* Package Options Dropdown */}
+                  <div className="space-y-2">
+                    <Label>Package Options</Label>
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <Button variant="outline" className="w-full justify-between">
+                          {data.package_options.length > 0
+                            ? `${data.package_options.length} selected`
+                            : 'Select package types'}
+                          <ChevronDown className="w-4 h-4 opacity-50" />
+                        </Button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent
+                        className="w-56 text-accent-foreground"
+                        onClick={(e) => e.stopPropagation()}
+                      >
+                        <DropdownMenuLabel>Package Types</DropdownMenuLabel>
+                        {(['individual', 'group', 'family', 'private'] as const).map((option) => (
+                          <DropdownMenuItem
+                            key={option}
+                            className="cursor-pointer flex items-center gap-2 px-2 py-1.5 rounded-sm hover:bg-accent focus:bg-accent outline-none"
+                            onSelect={(e) => e.preventDefault()}
+                          >
+                            <Checkbox
+                              checked={data.package_options.includes(option)}
+                              onCheckedChange={(checked) => {
+                                const newOptions = checked
+                                  ? [...data.package_options, option]
+                                  : data.package_options.filter((item) => item !== option);
+                                setData('package_options', newOptions);
+                              }}
+                              className="rounded-sm"
+                            />
+                            <span>{option.charAt(0).toUpperCase() + option.slice(1)}</span>
+                          </DropdownMenuItem>
+                        ))}
+                      </DropdownMenuContent>
+                    </DropdownMenu>
+                  </div>
+
+                  <div className="col-span-2 space-y-2">
+                    <Label htmlFor="description">Description</Label>
+                    <Textarea id="description" placeholder="Enter destination description" value={data.description} onChange={(e) => setData('description', e.target.value)} />
+                  </div>
+
+                  <div className="col-span-2 space-y-2">
+                    <Label htmlFor="description">Destination image</Label>
+                    <Input
+                      type="file"
+                      accept="image/*"
+                      id="destination-img"
+                      onChange={(e) => setData("image", e.target.files?.[0] ?? null)}
+                    />
+                  </div>
+                </div>
+                <div className="flex justify-end gap-2 mt-2">
+                  <Button variant="outline" onClick={() => { setIsAddDialogOpen(false); resetInertiaForm(); }}>
+                    Cancel
+                  </Button>
+                  <Button className="btn-ocean" disabled={processing} type='submit'>Create Destination</Button>
+                </div>
+              </form>
+            </DialogContent>
+          </Dialog>
         </div>
-      <div className="w-50 text-accent-foreground">
-      <Select value={categoryFilter} onValueChange={setCategoryFilter}>
-          <SelectTrigger>
-             <Filter className="w-4 h-4 mr-1" />
-            <SelectValue placeholder="Filter" />
-          </SelectTrigger>
-          <SelectContent className="text-accent-foreground">
-            <SelectItem value="all">All Categories</SelectItem>
-            <SelectItem value="marine">Marine Adventure</SelectItem>
-            <SelectItem value="nature">Nature Experience</SelectItem>
-            <SelectItem value="cultural">Cultural Tour</SelectItem>
-            <SelectItem value="whaleshark">Whale Shark</SelectItem>
-            <SelectItem value="adventure">Adventure</SelectItem>
-            </SelectContent>
-          </Select>   
 
-      <Select value={statusFilter} onValueChange={setStatusFilter}>
-          <SelectTrigger className="w-full">
-            <SelectValue placeholder="Status" />
-          </SelectTrigger>
-          <SelectContent className='text-accent-foreground'>
-            <SelectItem value="all">All Statuses</SelectItem>
-            <SelectItem value="active">Active</SelectItem>
-            <SelectItem value="inactive">Inactive</SelectItem>
-            <SelectItem value="draft">Draft</SelectItem>
-          </SelectContent>
-        </Select>
-      </div>
-      </div>
-    </div>
-  </CardHeader>
-  <CardContent className='text-accent-foreground'>
-    <Table>
-      <TableHeader>
-        <TableRow>
-          <TableHead>Destination</TableHead>
-          <TableHead>Category</TableHead>
-          <TableHead>Location</TableHead>
-          <TableHead>Price</TableHead>
-          <TableHead>Rating</TableHead>
-          <TableHead>Bookings</TableHead>
-          <TableHead>Status</TableHead>
-          <TableHead>Actions</TableHead>
-        </TableRow>
-      </TableHeader>
-      <TableBody>
-        {filteredDestinations.map((destination) => (
-          <TableRow key={destination.id}>
-            <TableCell>
-              <div className="flex items-center gap-3 min-w-40">
-                <img
-                  src={`/storage/${destination.image}`}
-                  alt={destination.name}
-                  className="w-10 h-10 rounded-lg object-cover"
-                />
-                <div>
-                  <div className="font-medium">{destination.name}</div>
-                  <div className="text-xs text-muted-foreground max-w-20 absolute w-full">Created  {formatDate(destination.created_at)}</div>
+        {/* Edit Destination Dialog */}
+        <Dialog
+          open={isEditDialogOpen}
+          onOpenChange={(open) => {
+            if (!open) {
+              resetInertiaForm();
+              setSelectedDestination(null);
+            }
+            setIsEditDialogOpen(open);
+            if (open) setIsAddDialogOpen(false);
+          }}
+        >
+          <DialogContent className="sm:max-w-[600px] text-accent-foreground overflow-y-auto ">
+            <form onSubmit={handleUpdate} encType="multipart/form-data">
+
+              {/* Errors Checks */}
+              {Object.keys(errors).length > 0 && (<Alert>
+                <CheckCircle2Icon />
+                <AlertTitle>Errors! Check Inputs</AlertTitle>
+                <AlertDescription>
+                  <ul>
+                    {Object.entries(errors).map(([key, message]) => (<li key={key}>{message as string}</li>))}
+                  </ul>
+                </AlertDescription>
+              </Alert>
+                )}
+              <DialogHeader>
+                <DialogTitle>Edit Destination</DialogTitle>
+                <DialogDescription>Update destination information and settings</DialogDescription>
+              </DialogHeader>
+
+              {selectedDestination && (
+                <div className="grid grid-cols-2 gap-4 py-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="edit-name">Destination Name</Label>
+                    <Input
+                      id="edit-name"
+                      placeholder="Enter destination name"
+                      value={data.name}
+                      onChange={(e) => setData('name', e.target.value)}
+                    />
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="edit-category">Category</Label>
+                    <Select
+                      value={data.category}
+                      onValueChange={(value) => setData('category', value)}
+                    >
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select category" />
+                      </SelectTrigger>
+                      <SelectContent className='text-accent-foreground'>
+                        <SelectItem value="marine">Marine Adventure</SelectItem>
+                        <SelectItem value="nature">Nature Experience</SelectItem>
+                        <SelectItem value="cultural">Cultural Tour</SelectItem>
+                        <SelectItem value="whaleshark">Whale Shark</SelectItem>
+                        <SelectItem value="adventure">Adventure</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="edit-status">Status</Label>
+                    <Select
+                      value={data.status}
+                      onValueChange={(value) => setData('status', value)}
+                    >
+                      <SelectTrigger>
+                        <SelectValue placeholder="Update Status" />
+                      </SelectTrigger>
+                      <SelectContent className='text-accent-foreground'>
+                        <SelectItem value="active">Active</SelectItem>
+                        <SelectItem value="inactive">Inactive</SelectItem>
+                        <SelectItem value="draft">Draft</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="edit-location">Location</Label>
+                    <Input
+                      id="edit-location"
+                      placeholder="Enter location"
+                      value={data.location}
+                      onChange={(e) => setData('location', e.target.value)}
+                    />
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="edit-price">Price</Label>
+                    <Input
+                      id="edit-price"
+                      placeholder="₱0.00"
+                      value={data.price}
+                      onChange={(e) => setData('price', e.target.value)}
+                    />
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="edit-guests-min">Min Guests</Label>
+                    <Input
+                      id="edit-guests-min"
+                      type="number"
+                      value={data.guests_min}
+                      onChange={(e) => setData('guests_min', e.target.value)}
+                    />
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="edit-guests-max">Max Guests</Label>
+                    <Input
+                      id="edit-guests-max"
+                      type="number"
+                      value={data.guests_max}
+                      onChange={(e) => setData('guests_max', e.target.value)}
+                    />
+                  </div>
+
+                  {/* Package Options */}
+                  <div className="space-y-2">
+                    <Label>Package Options</Label>
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <Button variant="outline" className="w-full justify-between">
+                          {data.package_options.length > 0
+                            ? `${data.package_options.length} selected`
+                            : 'Select package types'}
+                          <ChevronDown className="w-4 h-4 opacity-50" />
+                        </Button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent className="w-56 text-accent-foreground">
+                        <DropdownMenuLabel>Package Types</DropdownMenuLabel>
+                        {(['individual', 'group', 'family', 'private'] as const).map((option) => (
+                          <DropdownMenuItem
+                            key={option}
+                            className="cursor-pointer flex items-center gap-2 px-2 py-1.5 hover:bg-accent"
+                            onSelect={(e) => e.preventDefault()}
+                          >
+                            <Checkbox
+                              checked={data.package_options.includes(option)}
+                              onCheckedChange={(checked) => {
+                                const newOptions = checked
+                                  ? [...data.package_options, option]
+                                  : data.package_options.filter((item) => item !== option);
+                                setData('package_options', newOptions);
+                              }}
+                            />
+                            <span>{option.charAt(0).toUpperCase() + option.slice(1)}</span>
+                          </DropdownMenuItem>
+                        ))}
+                      </DropdownMenuContent>
+                    </DropdownMenu>
+                  </div>
+
+                  <div className="col-span-2 space-y-2">
+                    <Label htmlFor="edit-description">Description</Label>
+                    <Textarea
+                      id="edit-description"
+                      placeholder="Enter destination description"
+                      value={data.description}
+                      onChange={(e) => setData('description', e.target.value)}
+                    />
+                  </div>
+
+                  <div className="col-span-2 space-y-2">
+                    <Label htmlFor="edit-image">Destination image</Label>
+                    <Input
+                      type="file"
+                      accept="image/*"
+                      id="edit-destination-img"
+                      onChange={(e) => setData("image", e.target.files?.[0] ?? null)}
+                    />
+                    <div className="mt-2">
+                      <Label>Current Image:</Label>
+                      <img
+                        src={`/storage/${selectedDestination.image}`}
+                        alt={selectedDestination.name}
+                        className="w-20 h-20 rounded-lg object-cover mt-1"
+                      />
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              <div className="flex justify-end gap-2 mt-4 text-accent-foreground">
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => {
+                    setIsEditDialogOpen(false);
+                    resetInertiaForm();
+                  }}
+                >
+                  Cancel
+                </Button>
+                <Button className="btn-ocean" disabled={processing} type="submit">
+                  Save Changes
+                </Button>
+              </div>
+            </form>
+          </DialogContent>
+        </Dialog>
+
+    {/* VIEW DETAILS DIALOG */}
+
+    <Dialog open={!!viewDestination} onOpenChange={() => setViewDestination(null)}>
+      <DialogContent className="max-w-2xl max-h-[90vh] overflow-auto backdrop-blur-sm bg-background/95 border-2">
+        <DialogHeader>
+          <DialogTitle className="text-2xl">Destination Details</DialogTitle>
+          <DialogDescription>
+            Full information for {viewDestination?.name}
+          </DialogDescription>
+        </DialogHeader>
+
+        {viewDestination && (
+          <div className="space-y-6 py-4">
+            {/* Image & Basic Info */}
+            <div className="flex flex-col md:flex-row gap-6">
+               <img
+                src={`/storage/${viewDestination.image}`}
+                alt={viewDestination.name}
+                className="w-full md:w-2/4 h-64 object-cover rounded-lg"
+              />
+              <div className="flex-1 space-y-2">
+                <h3 className="text-xl font-bold">{viewDestination.name}</h3>
+                <div className="flex items-center gap-2">
+                  <MapPin className="w-4 h-4 text-muted-foreground" />
+                  <span>{viewDestination.location}</span>
+                </div>
+                <Badge variant="secondary" className="text-white">
+                  {viewDestination.category}
+                </Badge>
+                <div className="text-2xl font-bold">₱{viewDestination.price}</div>
+                <div className="flex items-center gap-1">
+                  <Star className="w-4 h-4 fill-amber-400 text-amber-400" />
+                  <span>{viewDestination.rating_count} reviews</span>
                 </div>
               </div>
-            </TableCell>
-            <TableCell >
-              <Badge className='text-white' variant="secondary">{destination.category}</Badge>
-            </TableCell>
-            <TableCell>
-              <div className="flex items-center gap-1">
-                <MapPin className="w-4 h-4 text-muted-foreground" />
-                {destination.location}
-              </div>
-            </TableCell>
-            <TableCell className="font-medium">₱{destination.price}</TableCell>
-            <TableCell>
-              <div className="flex items-center gap-1">
-                <Star className="w-4 h-4 fill-amber-400 text-amber-400" />
-                {destination.rating_count}
-              </div>
-            </TableCell>
-            <TableCell>{destination.bookings_count}</TableCell>
-            <TableCell >
-              <Badge className='text-white' variant={destination.status === "Active" ? "default" : "secondary"}>
-                {destination.status}
-              </Badge>
-            </TableCell>
-            <TableCell>
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <Button variant="ghost" className="h-8 w-8 p-0">
-                    <MoreHorizontal className="h-4 w-4" />
-                  </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent align="end" className='text-accent-foreground'>
-                  <DropdownMenuItem>
-                    <Eye className="mr-2 h-4 w-4" />
-                    View Details
-                  </DropdownMenuItem>
-                  <DropdownMenuItem onClick={() => handleEditDestination(destination)}>
+            </div>
+
+            {/* Description */}
+            <Card>
+              <CardHeader>
+                <CardTitle>Description</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p className="whitespace-pre-line">{viewDestination.description}</p>
+              </CardContent>
+            </Card>
+
+            {/* Stats */}
+            <div className="grid grid-cols-2 gap-4">
+              <Card>
+                <CardHeader>
+                  <CardTitle>Duration</CardTitle>
+                </CardHeader>
+                <CardContent>{viewDestination.duration} hours</CardContent>
+              </Card>
+              <Card>
+                <CardHeader>
+                  <CardTitle>Guests</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  {viewDestination.guests_min} – {viewDestination.guests_max} people
+                </CardContent>
+              </Card>
+              <Card>
+                <CardHeader>
+                  <CardTitle>Bookings</CardTitle>
+                </CardHeader>
+                <CardContent>{viewDestination.bookings_count}</CardContent>
+              </Card>
+              <Card>
+                <CardHeader>
+                  <CardTitle>Status</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <Badge variant={viewDestination.status === "active" ? "default" : "secondary"}>
+                    {viewDestination.status.charAt(0).toUpperCase() + viewDestination.status.slice(1)}
+                  </Badge>
+                </CardContent>
+              </Card>
+            </div>
+
+            {/* Dates */}
+            <Card>
+              <CardHeader>
+                <CardTitle>Timeline</CardTitle>
+              </CardHeader>
+              <CardContent className="grid grid-cols-2 gap-2">
+                <div>
+                  <Label className="text-muted-foreground">Created</Label>
+                  <p>{formatDate(viewDestination.created_at)}</p>
+                </div>
+                <div>
+                  <Label className="text-muted-foreground">Updated</Label>
+                  <p>{formatDate(viewDestination.updated_at)}</p>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+        )}
+
+      <DialogFooter>
+        <Button onClick={() => setViewDestination(null)}>Close</Button>
+      </DialogFooter>
+    </DialogContent>
+  </Dialog>
+
+    {/* Stats Cards */}
+    <div className="grid grid-cols-1 md:grid-cols-4 gap-6 ">
+      <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}>
+        <Card className='py-4'>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2 ">
+            <CardTitle className="text-sm font-medium">Total Destinations</CardTitle>
+            <MapPin className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">{stats.total_destinations}</div>
+            <p className="text-xs text-muted-foreground">+2 from last month</p>
+          </CardContent>
+        </Card>
+      </motion.div>
+
+      <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }}>
+        <Card className='py-4'>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Active Tours</CardTitle>
+            <Star className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">{stats.active_tours}</div>
+            <p className="text-xs text-muted-foreground">
+              {stats.total_destinations > 0
+                ? Math.round((stats.active_tours / stats.total_destinations) * 100) + '% of total'
+                : '0% of total'}
+            </p>
+          </CardContent>
+        </Card>
+      </motion.div>
+
+      <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }}>
+        <Card className='py-4'>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Total Bookings</CardTitle>
+            <Users className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">{formatNumber(stats.total_bookings)}</div>
+            <p className="text-xs text-muted-foreground">
+              {stats.active_tours > 0
+                ? `Avg ${Math.round(stats.total_bookings / stats.active_tours)} per tour`
+                : 'No active tours'}
+            </p>
+          </CardContent>
+        </Card>
+      </motion.div>
+
+      <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.4 }}>
+        <Card className='py-4'>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Avg Rating</CardTitle>
+            <Star className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">{formatRating(stats.avg_rating)}</div>
+            <p className="text-xs text-muted-foreground">+0.2 from last month</p>
+          </CardContent>
+        </Card>
+      </motion.div>
+    </div>
+
+  {/* Search and Filters */}
+  <Card>
+    <CardHeader>
+      <div className="flex items-center justify-between text-accent-foreground">
+        <CardTitle className='overflow-hidden w-24'>Destinations</CardTitle>
+        <div className="flex items-center gap-2">
+          <div className="relative">
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-4 h-4" />
+            <Input
+              placeholder="Search destinations..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="pl-10 w-64 md:w-80 overflow-hidden"
+            />
+          </div>
+          <div className="flex gap-2">
+            <Select value={categoryFilter} onValueChange={setCategoryFilter}>
+              <SelectTrigger>
+                <Filter className="w-4 h-4 mr-1" />
+                <SelectValue placeholder="Category" />
+              </SelectTrigger>
+              <SelectContent className="text-accent-foreground">
+                <SelectItem value="all">All Categories</SelectItem>
+                <SelectItem value="marine">Marine Adventure</SelectItem>
+                <SelectItem value="nature">Nature Experience</SelectItem>
+                <SelectItem value="cultural">Cultural Tour</SelectItem>
+                <SelectItem value="whaleshark">Whale Shark</SelectItem>
+                <SelectItem value="adventure">Adventure</SelectItem>
+              </SelectContent>
+            </Select>
+
+            <Select value={statusFilter} onValueChange={setStatusFilter}>
+              <SelectTrigger className="w-full">
+                <SelectValue placeholder="Status" />
+              </SelectTrigger>
+              <SelectContent className='text-accent-foreground'>
+                <SelectItem value="all">All Statuses</SelectItem>
+                <SelectItem value="active">Active</SelectItem>
+                <SelectItem value="inactive">Inactive</SelectItem>
+                <SelectItem value="draft">Draft</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+        </div>
+      </div>
+    </CardHeader>
+    <CardContent className='text-accent-foreground'>
+      <Table>
+        <TableHeader>
+          <TableRow>
+            <TableHead>Destination</TableHead>
+            <TableHead>Category</TableHead>
+            <TableHead>Location</TableHead>
+            <TableHead>Price</TableHead>
+            <TableHead>Rating</TableHead>
+            <TableHead>Bookings</TableHead>
+            <TableHead>Status</TableHead>
+            <TableHead>Actions</TableHead>
+          </TableRow>
+        </TableHeader>
+        <TableBody>
+          {filteredDestinations.map((destination) => (
+            <TableRow key={destination.id}>
+              <TableCell>
+                <div className="flex items-center gap-3 min-w-40">
+                  <img
+                    src={`/storage/${destination.image}`}
+                    alt={destination.name}
+                    className="w-10 h-10 rounded-lg object-cover"
+                  />
+                  <div>
+                    <div className="font-medium">{destination.name}</div>
+                    <div className="text-xs text-muted-foreground">Created {formatDate(destination.created_at)}</div>
+                  </div>
+                </div>
+              </TableCell>
+              <TableCell >
+                <Badge className='text-white' variant="secondary">{destination.category}</Badge>
+              </TableCell>
+              <TableCell>
+                <div className="flex items-center gap-1">
+                  <MapPin className="w-4 h-4 text-muted-foreground" />
+                  {destination.location}
+                </div>
+              </TableCell>
+              <TableCell className="font-medium">₱{destination.price}</TableCell>
+              <TableCell>
+                <div className="flex items-center gap-1">
+                  <Star className="w-4 h-4 fill-amber-400 text-amber-400" />
+                  {destination.rating_count}
+                </div>
+              </TableCell>
+              <TableCell>{destination.bookings_count}</TableCell>
+              <TableCell >
+                <Badge className='text-white' variant={destination.status === "active" ? "default" : "secondary"}>
+                  {destination.status.charAt(0).toUpperCase() + destination.status.slice(1)}
+                </Badge>
+              </TableCell>
+              <TableCell>
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button variant="ghost" className="h-8 w-8 p-0">
+                      <MoreHorizontal className="h-4 w-4" />
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end" className='text-accent-foreground'>
+                    <DropdownMenuItem onClick={() => setViewDestination(destination)}>
+                      <Eye className="mr-2 h-4 w-4" />
+                      View Details
+                    </DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => handleEditDestination(destination)}>
                       <Edit className="mr-2 h-4 w-4" />
                       Edit
                     </DropdownMenuItem>
-                  <DropdownMenuItem disabled={processing} className="text-destructive hover:bg-red-400 hover:text-black" onClick={() => handleDelete(destination.id, destination.name)}>
-                    <Trash2 className="mr-2 h-4 w-4" /> 
-                    Delete
-                  </DropdownMenuItem>
-                </DropdownMenuContent>
-              </DropdownMenu>
-            </TableCell>
-          </TableRow>
-        ))}
-      </TableBody>
-    </Table>
-  </CardContent>
-</Card>
-</div>
-  </AppLayout>
-);
-  };
-
+                    <DropdownMenuItem disabled={processing} className="text-destructive hover:bg-red-400 hover:text-black" onClick={() => handleDelete(destination.id, destination.name)}>
+                      <Trash2 className="mr-2 h-4 w-4" />
+                      Delete
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              </TableCell>
+            </TableRow>
+          ))}
+        </TableBody>
+      </Table>
+    </CardContent>
+  </Card>
+      </div>
+    </AppLayout>
+     </>
+  );
+}

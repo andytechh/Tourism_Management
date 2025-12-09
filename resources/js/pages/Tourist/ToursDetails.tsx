@@ -1,4 +1,4 @@
-import { use, useState } from "react";
+import { useState, useEffect } from "react";
 import { type BreadcrumbItem } from '@/types';
 import { route } from 'ziggy-js';
 import { 
@@ -20,15 +20,11 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
-import { Link, usePage, useForm } from '@inertiajs/react';
+import { Link, usePage, useForm, router, Head } from '@inertiajs/react';
 import { motion } from "framer-motion";
-import { ca, de } from "date-fns/locale";
-const breadcrumbs: BreadcrumbItem[] = [
-    {
-        title: 'Tours Details',
-        href: route('tourist.tourDetails', { destination: 1 }),
-    },
-];
+import { toast } from 'sonner'; // Add this import
+import appLayout from "@/layouts/app-layout";
+import AppLayout from "@/layouts/app-layout";
 
 interface Destination {
   id: number;
@@ -48,6 +44,7 @@ interface Destination {
   created_at: string;
   updated_at: string;
   package_options: string;
+  in_wishlist?: boolean;
 }
 
 interface PageProps {
@@ -56,21 +53,75 @@ interface PageProps {
 
 export default function TourDetails({destination}: PageProps) {
   const [selectedImage, setSelectedImage] = useState(0);
+  const [inWishlist, setInWishlist] = useState(destination.in_wishlist || false);
+  const [isProcessing, setIsProcessing] = useState(false);
+
   const { post, processing } = useForm({
     destination_id: destination.id,
   });
+  
+  const { flash } = usePage().props as { flash?: { success?: string; error?: string } };
 
+  // Show flash messages as toasts when component mounts or flash changes
+  useEffect(() => {
+    if (flash?.success) {
+      toast.success(flash.success);
+    }
+    if (flash?.error) {
+      toast.error(flash.error);
+    }
+  }, [flash]);
+
+  const handleWishlist = () => {
+    if (isProcessing) return;
+    
+    setIsProcessing(true);
+    
+    if (inWishlist) {
+      // Remove from wishlist
+      router.delete(route('tourist.wishlist.destroy', { destination: destination.id }), {
+        preserveScroll: true,
+        onSuccess: () => {
+          setInWishlist(false);
+          toast.success('Removed from wishlist');
+        },
+        onError: () => {
+          toast.error('Failed to remove from wishlist');
+        },
+        onFinish: () => {
+          setIsProcessing(false);
+        }
+      });
+    } else {
+      // Add to wishlist
+      router.post(route('tourist.wishlist.store'), { destination_id: destination.id }, {
+        preserveScroll: true,
+        onSuccess: () => {
+          setInWishlist(true);
+          toast.success('Added to wishlist');
+        },
+        onError: () => {
+          toast.error('Failed to add to wishlist');
+        },
+        onFinish: () => {
+          setIsProcessing(false);
+        }
+      });
+    }
+  };
 
   const formatPrice = (price: number | string) => {
-  return `₱${Number(price).toLocaleString('en-PH', {
-    minimumFractionDigits: 0,
-  })}`;
+    return `₱${Number(price).toLocaleString('en-PH', {
+      minimumFractionDigits: 0,
+    })}`;
   };
   
-
   return (
+    <>
+    <Head title={`${destination.name} - Tour Details`} />
+    <AppLayout breadcrumbs={[{ title: 'Tour Details', href: `/tourist/tours/${destination.id}` }]}>
     <div className="min-h-screen bg-background">
-      <div className=" max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="py-6">
           <Link
             href={route('tourist.dashboard')}
@@ -95,12 +146,24 @@ export default function TourDetails({destination}: PageProps) {
                   alt={destination.name}
                   className="w-full h-96 object-cover rounded-2xl"
                 />
-                <div className="absolute top-4 right-4 flex gap-2 text-accent-foreground">
-                  <Button size="icon" variant="secondary" className="bg-white/100 backdrop-blur-sm text-accent-foreground">
-                    <Share2 className="w-4 h-4" />
+                <div className="absolute top-4 right-4 flex gap-2">
+                  <Button 
+                    size="icon" 
+                    variant="secondary" 
+                    className="bg-white/90 backdrop-blur-sm hover:bg-white"
+                  >
+                    <Share2 className="w-4 h-4 text-foreground" />
                   </Button>
-                  <Button size="icon" variant="secondary" className="bg-white/90 backdrop-blur-sm">
-                    <Heart className="w-4 h-4" />
+                  <Button 
+                    onClick={handleWishlist}
+                    size="icon" 
+                    variant="secondary" 
+                    className="bg-white/90 backdrop-blur-sm hover:bg-white relative"
+                    disabled={isProcessing}
+                  >
+                    <Heart 
+                      className={`w-4 h-4 transition-colors ${inWishlist ? 'fill-red-500 text-red-500' : 'text-foreground'}`} 
+                    />
                   </Button>
                 </div>
               </div>
@@ -162,7 +225,7 @@ export default function TourDetails({destination}: PageProps) {
           </div>
 
           {/* Right sidebar */}
-          <div className="lg:col-span-1 ">
+          <div className="lg:col-span-1">
          <motion.div
               initial={{ opacity: 0, x: 20 }}
               animate={{ opacity: 1, x: 0 }}
@@ -174,12 +237,12 @@ export default function TourDetails({destination}: PageProps) {
               <div className="flex items-center justify-between py-5">
                 <div>
                   <div className="flex items-center gap-2">
-                    <span className="text-3xl font-bold text-foreground">{destination.price * 0.90}</span>
-                    <span className="text-lg text-muted-foreground line-through">{destination.price }</span>
+                    <span className="text-3xl font-bold text-foreground">{formatPrice(destination.price * 0.90)}</span>
+                    <span className="text-lg text-muted-foreground line-through">{formatPrice(destination.price)}</span>
                   </div>
                   <p className="text-sm text-muted-foreground">per person</p>
                 </div>
-                <Badge className="bg text-accent-foreground border-coral">
+                <Badge className="bg-red-100 text-red-800 border-red-200">
                   20% OFF
                 </Badge>
               </div>
@@ -189,17 +252,17 @@ export default function TourDetails({destination}: PageProps) {
                 <div className="grid grid-cols-2 gap-4 text-sm">
                   <div>
                     <p className="text-muted-foreground">Meeting Point</p>
-                    <p className="font-medium">{destination.guests_min}</p>
+                    <p className="font-medium">{destination.location}</p>
                   </div>
                   <div>
                     <p className="text-muted-foreground">Meeting Time</p>
-                    <p className="font-medium">{destination.guests_max}</p>
+                    <p className="font-medium">8:00 AM</p>
                   </div>
                 </div>
                <Separator />
                 <div className="space-y-3">
                 <Link href={route('tourist.tourBookings', { destination: destination.id })}>
-                <Button className="w-full btn-ocean h-12 text-lg mb-4" >
+                <Button className="w-full btn-ocean h-12 text-lg mb-4">
                   Book Now
                 </Button>
                    </Link>
@@ -218,5 +281,8 @@ export default function TourDetails({destination}: PageProps) {
         </div>
       </div>
     </div>
+    </AppLayout>
+        </>
   );
-};
+ 
+}

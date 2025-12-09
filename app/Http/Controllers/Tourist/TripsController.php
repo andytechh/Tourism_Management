@@ -14,7 +14,7 @@ class TripsController extends Controller
     {
         $bookings = Booking::with(['user', 'destination'])
             ->where('tourist_id', Auth::id())
-            ->orderBy('created_at', 'asc')
+            ->orderBy('created_at', 'desc')
             ->get()
             ->transform(function ($booking) {
                 return [

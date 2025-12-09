@@ -4,16 +4,17 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Star, MapPin, Calendar, Clock, User } from "lucide-react";
+import { Star, MapPin, Calendar, Clock, User, X } from "lucide-react";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { route } from "ziggy-js";
 import AppLayout from "@/layouts/app-layout";
-import { useForm, usePage } from "@inertiajs/react";
+import { useForm, usePage, router, Head } from "@inertiajs/react";
+import Swal from "sweetalert2";
 
 const breadcrumbs: BreadcrumbItem[] = [
   {
-    title: 'Tourist-Trips',
+    title: '',
     href: route('tourist.trips'),
   },
 ];
@@ -58,6 +59,35 @@ export default function Trips() {
         setSelectedBooking(null);
         reset();
       },
+    });
+  };
+
+  // CANCEL HANDLER
+  const handleCancelBooking = (bookingId: number) => {
+    Swal.fire({
+      title: 'Cancel Booking?',
+      text: "This action cannot be undone. Your payment will be refunded.",
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonText: 'Yes, cancel it!',
+      cancelButtonText: 'No, keep it',
+      confirmButtonColor: '#d33',
+    }).then((result) => {
+      if (result.isConfirmed) {
+        router.put(
+          route('tourist.bookings.cancel', { booking: bookingId }),
+          {},
+          {
+            preserveScroll: true,
+            onSuccess: () => {
+              Swal.fire('Cancelled!', 'Your booking has been cancelled.', 'success');
+            },
+            onError: () => {
+              Swal.fire('Error!', 'Failed to cancel booking.', 'error');
+            }
+          }
+        );
+      }
     });
   };
 
@@ -148,49 +178,70 @@ export default function Trips() {
                 <p className="font-mono font-bold text-primary text-sm">{booking.name}</p>
               </div>
 
-              {booking.status === "confirmed" && (
-                <div>
-                  {booking.rating ? (
-                    <div className="flex items-center gap-2">
-                      <div className="flex">
-                        {[1, 2, 3, 4, 5].map((star) => (
-                          <Star
-                            key={star}
-                            className={`w-4 h-4 ${
-                              star <= booking.rating!
-                                ? "fill-yellow-400 text-yellow-400"
-                                : "text-muted-foreground"
-                            }`}
-                          />
-                        ))}
+              {/* ACTION BUTTONS */}
+              <div className="flex gap-2">
+                {/* Cancel button for PENDING bookings */}
+                {booking.status === "pending" && (
+                  <Button
+                    variant="destructive"
+                    size="sm"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleCancelBooking(booking.id);
+                    }}
+                  >
+                    <X className="w-4 h-4 mr-1" />
+                    Cancel
+                  </Button>
+                )}
+
+                {/* Rating button for CONFIRMED bookings */}
+                {booking.status === "confirmed" && (
+                  <div>
+                    {booking.rating ? (
+                      <div className="flex items-center gap-2">
+                        <div className="flex">
+                          {[1, 2, 3, 4, 5].map((star) => (
+                            <Star
+                              key={star}
+                              className={`w-4 h-4 ${
+                                star <= booking.rating!
+                                  ? "fill-yellow-400 text-yellow-400"
+                                  : "text-muted-foreground"
+                              }`}
+                            />
+                          ))}
+                        </div>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setSelectedBooking(booking);
+                            setData('rating', booking.rating || 0);
+                            setData('feedback', booking.feedback || '');
+                          }}
+                        >
+                          Edit Rating
+                        </Button>
                       </div>
+                    ) : (
                       <Button
-                        variant="ghost"
+                        variant="outline"
                         size="sm"
-                        onClick={() => {
+                        onClick={(e) => {
+                          e.stopPropagation();
                           setSelectedBooking(booking);
-                          setData('rating', booking.rating || 0);
-                          setData('feedback', booking.feedback || '');
+                          setData('rating', 0);
+                          setData('feedback', '');
                         }}
                       >
-                        Edit Rating
+                        Rate Experience
                       </Button>
-                    </div>
-                  ) : (
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => {
-                        setSelectedBooking(booking);
-                        setData('rating', 0);
-                        setData('feedback', '');
-                      }}
-                    >
-                      Rate Experience
-                    </Button>
-                  )}
-                </div>
-              )}
+                    )}
+                  </div>
+                )}
+              </div>
             </div>
 
             {booking.feedback && (
@@ -207,13 +258,16 @@ export default function Trips() {
   );
 
   return (
+  <>
+   <Head title="Donsol Tourism Management System" />  
     <AppLayout breadcrumbs={breadcrumbs}>
-      <div className="min-h-screen flex flex-col">
-        <main className="flex-1 container mx-auto px-4 py-8">
-          <div className="max-w-6xl mx-auto space-y-8">
+      <div className="min-h-screen bg-gradient-to-br from-background via-background to-muted/20">
+        <main className="container mx-auto px-4 py-8 max-w-full">
             <div className="space-y-2">
-              <h1 className="text-4xl font-bold">My Bookings</h1>
-              <p className="text-muted-foreground">View and manage your tour bookings</p>
+               <h1 className="text-4xl md:text-5xl font-bold mb-3 bg-gradient-to-r from-primary via-accent to-primary bg-clip-text text-transparent">
+              My Trips
+            </h1>
+              <p className="text-muted-foreground mb-3">View and manage your tour bookings</p>
             </div>
 
             <Tabs defaultValue="all" className="w-full">
@@ -267,7 +321,6 @@ export default function Trips() {
                 )}
               </TabsContent>
             </Tabs>
-          </div>
         </main>
 
         
@@ -350,5 +403,6 @@ export default function Trips() {
         )}
       </div>
     </AppLayout>
+    </>
   );
 }

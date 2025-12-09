@@ -10,6 +10,9 @@ export default function AppLogo() {
                 <span className="mb-0.5 truncate leading-tight font-semibold">
                     Donsol Tourism
                 </span>
+                <span className="text-xs text-muted-foreground">
+                    Management System
+                </span>
             </div>
         </>
     );

@@ -12,7 +12,7 @@ import {
 } from '@/components/ui/sidebar';
 import { type NavItem } from '@/types';
 import { Link, usePage } from '@inertiajs/react';
-import { BookOpen, Folder, LayoutGrid, Users, Map, Navigation, NotebookPen, Hotel, MessageCircleWarning,  } from 'lucide-react';
+import { BookOpen, Folder, LayoutGrid, Users, Map, Navigation, NotebookPen, Hotel, MessageCircleWarning, Heart, Bell,  } from 'lucide-react';
 import AppLogo from './app-logo';
 
 // Role-based menu config
@@ -22,7 +22,6 @@ const menuItems: Record<string, { title: string; href: string; icon: any }[]> = 
         { title: 'Manage Users', href: '/admin/users', icon: Users },
         { title: 'Manage Destinations', href: '/admin/destinations', icon: Map },
         { title: 'Manage Bookings', href: '/admin/bookings', icon: NotebookPen},
-        { title: 'Manage Businesses', href: '/admin/business', icon: Hotel },
         { title: 'Manage Reports', href: '/admin/reports', icon: MessageCircleWarning },
     ],
     staff: [
@@ -32,16 +31,12 @@ const menuItems: Record<string, { title: string; href: string; icon: any }[]> = 
     tourist: [
         { title: 'Dashboard', href: '/tourist/dashboard', icon: LayoutGrid },
         { title: 'My Trips', href: '/tourist/trips', icon: Map },
-        { title: 'My Tours', href: '/tourist/tours', icon:  Navigation},
+        { title: 'Notification', href: '/tourist/notifications', icon:  Bell},
+        { title: 'Wislist', href: '/tourist/wishlist', icon:  Heart},
     ],
 };
 
 const footerNavItems: NavItem[] = [
-    {
-        title: 'Repository',
-        href: 'https://github.com/laravel/react-starter-kit',
-        icon: Folder,
-    },
     {
         title: 'Documentation',
         href: 'https://laravel.com/docs/starter-kits#react',
@@ -70,7 +65,7 @@ export function AppSidebar() {
                 </SidebarMenu>
             </SidebarHeader>
 
-            <SidebarContent className='text-accent-foreground-'>
+            <SidebarContent className='text-accent-foreground'>
                 <NavMain items={mainNavItems} />
             </SidebarContent>
 

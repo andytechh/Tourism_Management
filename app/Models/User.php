@@ -1,18 +1,19 @@
 <?php
 
 namespace App\Models;
-
+use App\Models\Booking;
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Laravel\Fortify\TwoFactorAuthenticatable;
+use App\Models\Destinations;
 
 class User extends Authenticatable
 {
     /** @use HasFactory<\Database\Factories\UserFactory> */
-    use HasFactory, Notifiable, TwoFactorAuthenticatable;
-
+    use HasFactory, TwoFactorAuthenticatable;
+    use Notifiable;
     /**
      * The attributes that are mass assignable.
      *
@@ -22,7 +23,7 @@ class User extends Authenticatable
         'name',
         'email',
         'password',
-        'roles',
+        'role',
         'status',
         'last_login_at',
     ];
@@ -37,8 +38,13 @@ class User extends Authenticatable
 {
     return $this->hasMany(Booking::class, 'tourist_id');
 }
+// Add this method to your User model
+public function wishlistDestinations()
+{
+    return $this->belongsToMany(Destinations::class, 'wishlists');
+}
 
-    /**
+    /** 
      * The attributes that should be hidden for serialization.
      *
      * @var list<string>

@@ -15,7 +15,7 @@ import { Calendar, Clock, Clock3, Filter, Locate, MapPin, Search, Star, Users } 
 
 const breadcrumbs: BreadcrumbItem[] = [
     {
-        title: 'Tourist-Dashboard',
+        title: '',
         href: route('tourist.dashboard'),
     },
 ];
@@ -36,6 +36,7 @@ interface Destinations{
     duration: number;
     updated_at: string;
     rating_count: number;
+    
   }
 interface PageProps {
   flash: {
@@ -43,6 +44,7 @@ interface PageProps {
   };
 
     destinations : Destinations[];
+    unreadBookingCount: number;
 }
 
 export default function Home() {
@@ -50,9 +52,9 @@ export default function Home() {
   const [statusFilter, setStatusFilter] = useState("all");
   const [selectedCategory, setSelectedCategory] = useState("all");
   const [visibleCount, setVisibleCount] = useState(6);
-  const {destinations =[], flash } = usePage().props as PageProps;
+  const {destinations =[], flash, unreadBookingCount= 0 } = usePage().props as PageProps;
   
- console.log(destinations); 
+
   const categories = [
     { id: "all", name: "All Tours" },
     { id: "whaleshark", name: "Whale Shark" },
@@ -86,10 +88,11 @@ const filteredDestinations = destinations.filter((dest) => {
 });
  const visibleDestinations = filteredDestinations.slice(0, visibleCount);
   
-
     return (
+      <>
+       <Head title="Donsol Tourism Management System" />  
+      
     <AppLayout breadcrumbs={breadcrumbs}>
-            <Head title="Dashboard" />
    <div className="min-h-screen bg-background">      
       {/* Hero Section */}
       <section className="pt-20 pb-12 bg-gradient-to-br from-primary/10 to-secondary/10">
@@ -175,75 +178,75 @@ const filteredDestinations = destinations.filter((dest) => {
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.6, delay: 4 * 0.1 }}
               >
-                <Card className="group hover:shadow-large transition-all duration-300 cursor-pointer overflow-hidden top-0 h-full">
-                  <div className="relative">
-                    <img
-                      src={destination.image}
-                      alt={destination.name}
-                      className="w-full h-50 object-cover group-hover:scale-105 transition-transform duration-300"
-                    />
-                    <div className="absolute top-4 right-4 bg-white/90 backdrop-blur-sm px-3 py-1 rounded-full">
-                      <span className="font-bold text-primary">{formatPrice(destination.price)}</span>
-                    </div>
-                    <Badge 
-                      className="absolute top-4 left-4 bg-secondary text-secondary-foreground"
-                    >
-                      {/* {tour.difficulty} */}
-                    </Badge>
-                  </div>
-
-                  <CardHeader className="pb-3">
-                    <div className="flex items-center justify-between mb-2">
-                      <CardTitle className="text-lg group-hover:text-primary transition-colors">
-                        {destination.name}
-                      </CardTitle>
-                      <div className="flex items-center space-x-1">
-                        <Star className="w-4 h-4 fill-amber-400 text-amber-400" />
-                        <span className="text-sm font-medium">{destination.average_rating}</span>
-                        <span className="text-xs text-muted-foreground">({destination.rating_count})</span>
+                <Link href={route('tourist.tourDetails', destination.id)}>
+                  <Card className="group hover:shadow-large transition-all duration-300 cursor-pointer overflow-hidden top-0 h-full">
+                    <div className="relative">
+                      <img
+                        src={destination.image}
+                        alt={destination.name}
+                        className="w-full h-50 object-cover group-hover:scale-105 transition-transform duration-300"
+                      />
+                      <div className="absolute top-4 right-4 bg-white/90 backdrop-blur-sm px-3 py-1 rounded-full">
+                        <span className="font-bold text-primary">{formatPrice(destination.price)}</span>
                       </div>
-                    </div>
-                    <CardDescription className="line-clamp-2">
-                      {destination.description}
-                    </CardDescription>
-                  </CardHeader>
-
-                  <CardContent className="pt-0 ">
-                    <div className="w-full grid grid-cols-3 gap-6 mb-4 text-sm text-muted-foreground text-center">
-                      <div className="flex items-center">
-                        <Clock3 className="w-4 h-4 mr-1" />
-                         {destination.duration} 
-                      </div>
-                      <div className="flex items-center">
-                        <Users className="w-4 h-4 mr-1" />
-                        Max {destination.guests_max} Guests
-                      </div>
-                      <div className="flex items-center">
-                        <Calendar className="w-4 h-4 mr-1" />
-                        {destination.status}
-                      </div>
+                      <Badge 
+                        className="absolute top-4 left-4 bg-secondary text-secondary-foreground"
+                      >
+                        {/* {tour.difficulty} */}
+                      </Badge>
                     </div>
 
-                    <div className=" items-center flex justify-between space-x-2">
+                    <CardHeader className="pb-3">
+                      <div className="flex items-center justify-between mb-2">
+                        <CardTitle className="text-lg group-hover:text-primary transition-colors">
+                          {destination.name}
+                        </CardTitle>
+                        <div className="flex items-center space-x-1">
+                          <Star className="w-4 h-4 fill-amber-400 text-amber-400" />
+                          <span className="text-sm font-medium">{destination.average_rating}</span>
+                          <span className="text-xs text-muted-foreground">({destination.rating_count})</span>
+                        </div>
+                      </div>
+                      <CardDescription className="line-clamp-2">
+                        {destination.description}
+                      </CardDescription>
+                    </CardHeader>
 
-                      <div className="flex-1" >
-                     <Link href={route('tourist.tourDetails', destination.id)} >
+                    <CardContent className="pt-0 ">
+                      <div className="w-full grid grid-cols-3 gap-6 mb-4 text-sm text-muted-foreground text-center">
+                        <div className="flex items-center">
+                          <Clock3 className="w-4 h-4 mr-1" />
+                          {destination.duration} 
+                        </div>
+                        <div className="flex items-center">
+                          <Users className="w-4 h-4 mr-1" />
+                          Max {destination.guests_max} Guests
+                        </div>
+                        <div className="flex items-center">
+                          <Calendar className="w-4 h-4 mr-1" />
+                          {destination.status}
+                        </div>
+                      </div>
+
+                      <div className=" items-center flex justify-between space-x-2">
+
+                        <div className="flex-1" >
                           <Button className="btn-ocean flex-1">
                             View Details
                           </Button> 
-                        </Link>
+                        </div>
+                        <div className="flex-1 flex justify-end">
+                          <Link href={route('tourist.tourBookings', {destination: destination.id})} className="ml-2"> 
+                            <Button variant="outline">
+                              Book Now
+                            </Button>
+                          </Link> 
+                        </div>
+                        
                       </div>
-                      <div className="flex-1 flex justify-end">
-                       <Link href={route('tourist.tourBookings', {destination: destination.id})} className="ml-2"> 
-                        <Button variant="outline">
-                          Book Now
-                        </Button>
-                      </Link> 
-                      </div>
-                      
-                    </div>
-                  </CardContent>
-                </Card>
+                    </CardContent>
+                  </Card>
+                </Link>
               </motion.div>
             ))}
           </div>
@@ -260,5 +263,6 @@ const filteredDestinations = destinations.filter((dest) => {
       </section>
     </div>
         </AppLayout>
+s  </>
     );
 }
